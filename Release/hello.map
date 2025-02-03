@@ -1,0 +1,117 @@
+ hello
+
+ Timestamp is 67a14a7f (Tue Feb  4 01:00:15 2025)
+
+ Preferred load address is 00400000
+
+ Start         Length     Name                   Class
+ 0001:00000000 000003dcH .text$mn                CODE
+ 0001:000003dc 000003f8H .text$mn$cpp            CODE
+ 0001:000007d4 0000002cH .text$mn$cpp$r          CODE
+ 0001:00000800 0000008cH .text$mn$cpp$s          CODE
+ 0001:0000088c 00000006H .text$nm                CODE
+ 0001:00000892 000000daH .text$zz                CODE
+ 0002:00000000 00000000H .idata$5                DATA
+ 0002:00000000 000000b0H .rdata                  DATA
+ 0002:000000b0 00000000H .edata                  DATA
+ 0002:000000b0 00000068H .rdata$zzzdbg           DATA
+ 0002:00000118 00000000H .idata$2                DATA
+ 0002:00000118 00000000H .idata$3                DATA
+ 0002:00000118 00000000H .idata$4                DATA
+ 0002:00000118 00000000H .idata$6                DATA
+ 0003:00000000 00000000H .data                   DATA
+ 0003:00000000 00000008H .bss                    DATA
+
+  Address         Publics by Value              Rva+Base       Lib:Object
+
+ 0000:00000000       ___AbsoluteZero            00000000     <absolute>
+ 0000:00000000       ___arm64x_extra_rfe_table  00000000     <absolute>
+ 0000:00000000       ___arm64x_extra_rfe_table_size 00000000     <absolute>
+ 0000:00000000       ___arm64x_native_entrypoint 00000000     <absolute>
+ 0000:00000000       ___arm64x_redirection_metadata 00000000     <absolute>
+ 0000:00000000       ___arm64x_redirection_metadata_count 00000000     <absolute>
+ 0000:00000000       ___dynamic_value_reloc_table 00000000     <absolute>
+ 0000:00000000       ___enclave_config          00000000     <absolute>
+ 0000:00000000       ___guard_check_icall_a64n_fptr 00000000     <absolute>
+ 0000:00000000       ___guard_eh_cont_count     00000000     <absolute>
+ 0000:00000000       ___guard_eh_cont_table     00000000     <absolute>
+ 0000:00000000       ___guard_fids_count        00000000     <absolute>
+ 0000:00000000       ___guard_fids_table        00000000     <absolute>
+ 0000:00000000       ___guard_flags             00000000     <absolute>
+ 0000:00000000       ___guard_iat_count         00000000     <absolute>
+ 0000:00000000       ___guard_iat_table         00000000     <absolute>
+ 0000:00000000       ___guard_longjmp_count     00000000     <absolute>
+ 0000:00000000       ___guard_longjmp_table     00000000     <absolute>
+ 0000:00000000       ___hybrid_auxiliary_delayload_iat 00000000     <absolute>
+ 0000:00000000       ___hybrid_auxiliary_delayload_iat_copy 00000000     <absolute>
+ 0000:00000000       ___hybrid_auxiliary_iat    00000000     <absolute>
+ 0000:00000000       ___hybrid_auxiliary_iat_copy 00000000     <absolute>
+ 0000:00000000       ___hybrid_code_map         00000000     <absolute>
+ 0000:00000000       ___hybrid_code_map_count   00000000     <absolute>
+ 0000:00000000       ___hybrid_image_info_bitfield 00000000     <absolute>
+ 0000:00000000       ___volatile_metadata       00000000     <absolute>
+ 0000:00000000       ___x64_code_ranges_to_entry_points 00000000     <absolute>
+ 0000:00000000       ___x64_code_ranges_to_entry_points_count 00000000     <absolute>
+ 0000:00000000       ___ImageBase               00400000     <linker-defined>
+ 0001:00000000       ?epASM@@YGXXZ              00401000 f   x86.obj
+ 0001:00000030       ?__Address@@YIPAXPBX@Z     00401030 f   x86.obj
+ 0001:00000043       __alloca_probe             00401043 f   x86.obj
+ 0001:00000043       __chkstk                   00401043 f   x86.obj
+ 0001:00000072       @DnsMapRcodeToStatus@4     00401072 f   x86.obj
+ 0001:0000009e       @DnsStatusString@4         0040109e f   x86.obj
+ 0001:000000ea       _FormatMessageW@28         004010ea f   x86.obj
+ 0001:00000112       _ExitProcess@4             00401112 f   x86.obj
+ 0001:0000015e       ?GetMartaExtensionInterface@@YGPAU_ACC_MARTA_FUNCTIONS@@XZ 0040115e f   x86.obj
+ 0001:000001ba       _MessageBoxW@16            004011ba f   x86.obj
+ 0001:00000202       _DbgPrint                  00401202 f   x86.obj
+ 0001:00000222       __vsnwprintf               00401222 f   x86.obj
+ 0001:00000246       _RtlDispatchAPC@12         00401246 f   x86.obj
+ 0001:00000262       _LdrGetProcedureAddress@16 00401262 f   x86.obj
+ 0001:00000292       _LdrLoadDll@16             00401292 f   x86.obj
+ 0001:000002b6       _RtlInitUnicodeString@8    004012b6 f   x86.obj
+ 0001:000002f2       _CoCreateInstance@20       004012f2 f   x86.obj
+ 0001:0000031a       _CoInitializeEx@8          0040131a f   x86.obj
+ 0001:00000342       _CoTaskMemFree@4           00401342 f   x86.obj
+ 0001:00000366       _CoUninitialize@0          00401366 f   x86.obj
+ 0001:000003b0       __alloca_probe_16          004013b0 f   ntdllp:alloca16.obj
+ 0001:000003c6       __alloca_probe_8           004013c6     ntdllp:alloca16.obj
+ 0001:000003dc       ?MsgBox@@YAHIPB_W0ZZ       004013dc f   ep.obj
+ 0001:0000042e       ?ApcTest@@YGXK@Z           0040142e f   ep.obj
+ 0001:00000486       ?ComTest@@YGXXZ            00401486 f   ep.obj
+ 0001:00000598       ?ep@@YGXXZ                 00401598 f   ep.obj
+ 0001:000005f5       ?get_hmod@@YIPAXPB_W@Z     004015f5 f   ScEntry:GetFuncAddr.obj
+ 0001:0000063f       ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@PBD@Z 0040163f f   ScEntry:GetFuncAddr.obj
+ 0001:000007d4       __GUID_dc1c5a9c_e88a_4dde_a5a1_60f82a20aef7 004017d4     ep.obj
+ 0001:000007e4       __GUID_d57c7288_d4ad_4768_be02_9d969532d960 004017e4     ep.obj
+ 0001:00000800       ??_C@_0O@HELLMLPH@ApcTest?$CI?$CFp?$CJ?$AN?6@FNODOBFM@ 00401800     ep.obj
+ 0001:00000810       ??_C@_1CC@NKINBMBG@?$AA?$CF?$AAh?$AAs?$AA?$AN?$AA?6?$AAe?$AAn?$AAt?$AAr?$AAy?$AA?5?$AAa?$AAt?$AA?5?$AA?$CF@FNODOBFM@ 00401810     ep.obj
+ 0001:00000840       ??_C@_1M@BOLMKKCK@?$AAH?$AAe?$AAl?$AAl?$AAo@FNODOBFM@ 00401840     ep.obj
+ 0001:00000850       ??_C@_17NCBHHMJ@?$AAC?$AAo?$AAm@FNODOBFM@ 00401850     ep.obj
+ 0001:00000860       ??_C@_1BI@NOFJEJPO@?$AAt?$AAa?$AAb?$AAl?$AAe?$AA?5?$AAa?$AAt?$AA?5?$AA?$CF?$AAp@FNODOBFM@ 00401860     ep.obj
+ 0001:00000880       ??_C@_1M@OJJPKJJM@?$AAM?$AAa?$AAr?$AAt?$AAa@FNODOBFM@ 00401880     ep.obj
+ 0001:0000088c       ?sc_end@@YGPAXXZ           0040188c f   ScEntry:prepare.obj
+ 0001:00000892       ?ScEntry@@YGXPAU_PEB@@@Z   00401892 f   ScEntry:prepare.obj
+ 0002:00000000       ??_C@_0BF@EKFKPNAI@RtlInitUnicodeString@ 00402000     ScEntry:prepare.obj
+ 0002:00000018       ??_C@_1BI@NEOFKCPM@?$AAp?$AAr?$AAe?$AAp?$AAa?$AAr?$AAe?$AA?4?$AAd?$AAl?$AAl@ 00402018     ScEntry:prepare.obj
+ 0002:00000030       ??_C@_0L@HOFGLFDL@LdrLoadDll@ 00402030     ScEntry:prepare.obj
+ 0002:0000003c       ??_C@_0BH@GKPJJDBO@LdrGetProcedureAddress@ 0040203c     ScEntry:prepare.obj
+ 0002:00000054       ??_C@_0N@FIGJGHFN@LdrUnloadDll@ 00402054     ScEntry:prepare.obj
+ 0002:00000064       ??_C@_0BD@JDDPIELM@RtlExitUserProcess@ 00402064     ScEntry:prepare.obj
+ 0003:00000000       ___@@_PchSym_@00@UfhvihUsziibUwlxfnvmghUtrgsfyUhxPwvnlUgnkUdrmDCUivovzhvUsvoolUhgwzucOlyq@4B2008FD98C1DD4 00403000     stdafx.obj
+ 0003:00000004       ___@@_PchSym_@00@UfhvihUsziibUwlxfnvmghUtrgsfyUhxPwvnlUgnkUdrmDCUivovzhvUhxvmgibUhgwzucOlyq@4B2008FD98C1DD4 00403004     ScEntry:stdafx.obj
+
+ entry point at        0001:00000892
+
+ Static symbols
+
+ 0000:ffffb000       .debug$S                   00400000     ntdllp:ntdll.dll
+ 0000:ffffb000       .debug$S                   00400000     ntdllp:ntdll.dll
+ 0002:ffffe000       .idata$6                   00400000     ntdllp:ntdll.dll
+ 0001:00000005       common_imp_call            00401005 f   x86.obj
+ 0001:000000c7       dnsapi                     004010c7 f   x86.obj
+ 0001:00000137       kernel32                   00401137 f   x86.obj
+ 0001:00000193       ntmarta                    00401193 f   x86.obj
+ 0001:000001df       user32                     004011df f   x86.obj
+ 0001:000002e3       ntdllp                     004012e3 f   x86.obj
+ 0001:0000038f       ole32                      0040138f f   x86.obj
+ 0001:000003b0       $$000000                   004013b0     ntdllp:alloca16.obj

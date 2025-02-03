@@ -1,0 +1,1 @@
+#include "..\ScEntry\stdafx.h"

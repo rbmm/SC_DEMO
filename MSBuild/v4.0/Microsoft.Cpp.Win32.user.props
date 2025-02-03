@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <INC_ROOT>$(WindowsSdkDir)Include\$(TargetPlatformVersion)\</INC_ROOT>
+    <LIB_ROOT>$(WindowsSdkDir)Lib\$(TargetPlatformVersion)\</LIB_ROOT>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(INC_ROOT)shared;$(INC_ROOT)km;$(INC_ROOT)um;$(INC_ROOT)km\crt</IncludePath>
+    <LibraryPath>$(LIB_ROOT)km\x86;$(LIB_ROOT)um\x86;$(LIB_ROOT)ucrt\x86</LibraryPath>
+    <IntDir>$(SolutionDir)tmp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <EmbedManifest>false</EmbedManifest>
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+		<AdditionalDependencies>BufferOverflow.lib;ntdllp.lib;kernel32.lib;user32.lib;advapi32.lib</AdditionalDependencies>
+		<IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+		<ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+		<AdditionalLibraryDirectories>"$(OutDir)"</AdditionalLibraryDirectories>
+		<GenerateDebugInformation>true</GenerateDebugInformation>
+		<LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+		<LargeAddressAware>true</LargeAddressAware>
+		<TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <DiagnosticsFormat>Classic</DiagnosticsFormat>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CallingConvention>StdCall</CallingConvention>
+      <OmitFramePointers>true</OmitFramePointers>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <BuildStlModules>false</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="LIB_ROOT">
+      <Value>$(LIB_ROOT)</Value>
+    </BuildMacro>
+    <BuildMacro Include="INC_ROOT">
+      <Value>$(INC_ROOT)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
