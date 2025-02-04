@@ -133,12 +133,16 @@ NTSTATUS ReadFromFile(_In_ PCWSTR lpFileName,
 	return status;
 }
 
-NTSTATUS SaveToFile(_In_ PCWSTR lpFileName, _In_ const void* lpBuffer, _In_ ULONG nNumberOfBytesToWrite)
+NTSTATUS SaveToFile(
+	_In_ PCWSTR lpFileName, 
+	_In_ const void* lpBuffer, 
+	_In_ ULONG nNumberOfBytesToWrite, 
+	_In_ BOOL MustBeEmpty = FALSE)
 {
 	UNICODE_STRING ObjectName;
 	NTSTATUS status = RtlDosPathNameToNtPathName_U_WithStatus(lpFileName, &ObjectName, 0, 0);
 
-	DbgPrint("DosPathNameToNt(\"%ws\") = %x\r\n", lpFileName, status);
+	DbgPrint("DosPathNameToNt(\"%ws\") = %x [%x]\r\n", lpFileName, status, MustBeEmpty);
 
 	if (0 <= status)
 	{
@@ -148,16 +152,31 @@ NTSTATUS SaveToFile(_In_ PCWSTR lpFileName, _In_ const void* lpBuffer, _In_ ULON
 
 		LARGE_INTEGER AllocationSize = { nNumberOfBytesToWrite };
 
+		if (MustBeEmpty)
+		{
+			if (0 <= (status = NtOpenFile(&hFile, FILE_READ_ATTRIBUTES, &oa, &iosb, FILE_SHARE_READ, 0)))
+			{
+				FILE_STANDARD_INFORMATION fsi;
+				if (0 <= (status = NtQueryInformationFile(hFile, &iosb, &fsi, sizeof(fsi), FileStandardInformation)))
+				{
+					MustBeEmpty = fsi.EndOfFile.QuadPart != 0;
+				}
+
+				NtClose(hFile);
+			}
+		}
+
 		status = NtCreateFile(&hFile, FILE_APPEND_DATA | SYNCHRONIZE, &oa, &iosb, &AllocationSize,
 			0, 0, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE, 0, 0);
 
-		DbgPrint("CreateFile(\"%wZ\") = %x\r\n", &ObjectName, status);
+		DbgPrint("CreateFile(\"%wZ\") = %x [%x]\r\n", &ObjectName, status, MustBeEmpty);
 
 		RtlFreeUnicodeString(&ObjectName);
 
 		if (0 <= status)
 		{
-			status = NtWriteFile(hFile, 0, 0, 0, &iosb, const_cast<void*>(lpBuffer), nNumberOfBytesToWrite, 0, 0);
+			status = MustBeEmpty ? STATUS_DIRECTORY_NOT_EMPTY :
+				NtWriteFile(hFile, 0, 0, 0, &iosb, const_cast<void*>(lpBuffer), nNumberOfBytesToWrite, 0, 0);
 			NtClose(hFile);
 			DbgPrint("WriteFile(%x) = %x\r\n", nNumberOfBytesToWrite, status);
 		}
@@ -580,7 +599,7 @@ __space:
 			goto __loop;
 		}
 
-		status = SaveToFile(pszImp, buf, RtlPointerToOffset(buf, psz));
+		status = SaveToFile(pszImp, buf, RtlPointerToOffset(buf, psz), TRUE);
 		return 0 > status ? status : STATUS_MORE_PROCESSING_REQUIRED;
 	}
 }
@@ -610,7 +629,7 @@ NTSTATUS IMP_HELP::ProcessMAP(
 	return status;
 }
 
-NTSTATUS ProcessIAT(PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
+NTSTATUS ProcessIAT(PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
 {
 	if (PVOID hmod = GetModuleHandleW(0))
 	{
@@ -630,6 +649,8 @@ NTSTATUS ProcessIAT(PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
 			{
 				return STATUS_INTERNAL_ERROR;
 			}
+
+			DbgPrint("Delete(\"%ws\")=%x\r\n", pczObj, DeleteFileW(pczObj) ? 0 : RtlGetLastNtStatus());
 
 			if (PIMAGE_NT_HEADERS pinth = RtlImageNtHeader(hmod))
 			{
@@ -1101,7 +1122,7 @@ NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 
 	DbgPrint("PrepareSC(%p, %x, <%ws>)\r\n", Base, cb, GetCommandLineW());
 
-	//*map*imp[*bin*[?[password?]]asm*exe]
+	//*map*obj*imp*[bin]*[?password?asm][*exe]
 
 	if (PWSTR psz = wcschr(GetCommandLineW(), '*'))
 	{
@@ -1110,53 +1131,64 @@ NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 		if (psz = wcschr(psz, '*'))
 		{
 			*psz++ = 0;
-			PWSTR pczImp = psz, pczBin = 0, pczAsm = 0, pczExe = 0;
+
+			PWSTR pczObj = psz;
 
 			if (psz = wcschr(psz, '*'))
 			{
 				*psz++ = 0;
-				pczBin = psz;
+
+				PWSTR pczImp = psz, pczBin = 0, pczAsm = 0, pczExe = 0;
 
 				if (psz = wcschr(psz, '*'))
 				{
 					*psz++ = 0;
-					pczAsm = psz;
+
+					pczBin = psz;
 
 					if (psz = wcschr(psz, '*'))
 					{
 						*psz++ = 0;
-						pczExe = psz;
+
+						pczAsm = psz;
+
+						if (psz = wcschr(psz, '*'))
+						{
+							*psz++ = 0;
+
+							pczExe = psz;
+						}
 					}
 				}
-			}
 
-			NTSTATUS status = ProcessIAT(pczImp, pczMap, (ULONG_PTR)Base + cb);
-
-			if (0 <= status)
-			{
-				if (pczBin && *pczBin)
-				{
-					status = SaveToFile(pczBin, Base, cb);
-				}
+				NTSTATUS status = ProcessIAT(pczObj, pczImp, pczMap, (ULONG_PTR)Base + cb);
 
 				if (0 <= status)
 				{
-					if (pczAsm && *pczAsm)
+					if (pczBin && *pczBin)
 					{
-						status = '?' == *pczAsm ? CreateZipAsmSC(pczAsm + 1, Base, cb) : CreateAsmSC(pczAsm, Base, cb);
+						status = SaveToFile(pczBin, Base, cb);
 					}
 
 					if (0 <= status)
 					{
-						if (pczExe && *pczExe)
+						if (pczAsm && *pczAsm)
 						{
-							status = CreateExeSC(pczExe, Base, cb, ImageBase);
+							status = '?' == *pczAsm ? CreateZipAsmSC(pczAsm + 1, Base, cb) : CreateAsmSC(pczAsm, Base, cb);
+						}
+
+						if (0 <= status)
+						{
+							if (pczExe && *pczExe)
+							{
+								status = CreateExeSC(pczExe, Base, cb, ImageBase);
+							}
 						}
 					}
 				}
-			}
 
-			return PrintError(status);
+				return PrintError(status);
+			}
 		}
 	}
 

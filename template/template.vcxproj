@@ -51,7 +51,7 @@
       <AdditionalDependencies>ntdllp.lib;ScEntry.lib;kernel32.lib;user32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*imp.$(PlatformTarget).asm**?password?$(ProjectName).$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).exe</Command>
+      <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*$(PlatformTarget).obj*imp.$(PlatformTarget).asm**?password?$(ProjectName).$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
