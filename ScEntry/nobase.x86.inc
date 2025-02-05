@@ -43,11 +43,7 @@ name proc private
 name endp
 endm
 
-; hmod   : hmod for dll
-; name   : decorated name of the function (as in lib file )
-; string : name from dll export table or #ordinal ( #123 )
-
-createFunc? macro hmod, name, string
+createFunc macro hmod, name, hash
   ALIGN 4
   nop
   nop
@@ -55,38 +51,18 @@ name proc
   call hmod
   call @@1
   DD 0
-  DB string,0
+  DD hash
 @@1: 
   pop edx
   jmp common_imp_call
 name endp
 endm
 
-; name = _string@n , __stdcall api
-createFuncS macro hmod, string, n
-createFunc? hmod, @CatStr(_,string,@,n), '&string'
-endm
-
-; name = @string@n , __fastcall api
-createFuncF macro hmod, string, n
-createFunc? hmod, @CatStr(@,string,@,n), '&string'
-endm
-
-; name = _string , __cdecl api
-createFuncC macro hmod, string
-createFunc? hmod, @CatStr(_,string), '&string'
-endm
-
-; name == string
-createFunc macro hmod, string
-createFunc? hmod, string, '&string'
-endm
-
 ; void *__fastcall get_hmod(const wchar_t *)
 extern ?get_hmod@@YIPAXPB_W@Z : PROC
 
-; void *__fastcall GetFuncAddressEx(struct _IMAGE_DOS_HEADER *,const char *)
-extern ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@PBD@Z : PROC
+; void *__fastcall GetFuncAddressEx(struct _IMAGE_DOS_HEADER *,unsigned long)
+extern ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@K@Z : PROC
 
 ; ecx -> hmod, edx -> func
 common_imp_call proc private
@@ -104,9 +80,9 @@ common_imp_call proc private
   mov [ecx],eax ; hmod = get_hmod, save dll address
   mov edx,[esp]
 @@2:
-  lea edx,[edx + 4]
+  mov edx,[edx + 4]
   mov ecx,eax
-  call ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@PBD@Z
+  call ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@K@Z
   pop edx
   mov [edx],eax ; func = GetFuncAddressEx, save func address
 @@1:

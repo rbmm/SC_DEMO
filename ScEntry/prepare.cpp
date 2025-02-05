@@ -15,7 +15,8 @@ void* sc_end()
 #pragma code_seg(".text$zz")
 
 PVOID GetNtBase();
-PVOID __fastcall GetFuncAddressEx(PIMAGE_DOS_HEADER pidh, PCSTR ProcedureName);
+ULONG HashString(PCSTR lpsz, ULONG hash = 0);
+PVOID __fastcall GetFuncAddressEx(PIMAGE_DOS_HEADER pidh, ULONG Hash);
 
 // 64: ?ScEntry@@YAXPEAU_PEB@@@Z
 // 32: ?ScEntry@@YGXPAU_PEB@@@Z
@@ -59,7 +60,7 @@ void WINAPI ScEntry(PEB* peb)
 
 	PIMAGE_DOS_HEADER pidh = (PIMAGE_DOS_HEADER)GetNtBase();
 
-#define RAC(fn, ...) (pv = GetFuncAddressEx(pidh, #fn), fn)(__VA_ARGS__)
+#define RAC(fn, ...) (pv = GetFuncAddressEx(pidh, HashString(#fn)), fn)(__VA_ARGS__)
 	
 	UNICODE_STRING DllName;
 	RAC(RtlInitUnicodeString, &DllName, L"prepare.dll");
@@ -74,7 +75,6 @@ void WINAPI ScEntry(PEB* peb)
 			status = PrepareSC(epASM, RtlPointerToOffset(epASM, sc_end()), &__ImageBase);
 		}
 
-		pv = GetFuncAddressEx(pidh, "LdrUnloadDll");
 		RAC(LdrUnloadDll, hmod);
 	}
 

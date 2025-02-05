@@ -59,7 +59,7 @@ VOID NTAPI ApcTest(_In_ ULONG_PTR Parameter)
 
 	if (PCSTR pcsz = DnsStatusString(DnsMapRcodeToStatus(DNS_RCODE_YXDOMAIN)))
 	{
-		MsgBox(MB_ICONINFORMATION, _YW(L"Hello"), _YW(L"%u: %hs\r\nentry at %p"), GetTickCount(), pcsz, (PVOID)Parameter);
+		MsgBox(MB_ICONINFORMATION, _YW(L"Hello"), _YW(L"[%hs]\r\nentry at %p"), pcsz, (PVOID)Parameter);
 	}
 }
 
@@ -112,11 +112,14 @@ void WINAPI ep()
 {
 	CPP_FUNCTION;
 	
+	BOOL Critical;
+	IsProcessCritical(NtCurrentProcess(), &Critical);
+
 	ComTest();
 
 	if (_ACC_MARTA_FUNCTIONS* pTable = GetMartaExtensionInterface())
 	{
-		MsgBox(MB_ICONWARNING, _YW(L"Marta+"), _YW(L"table at %p"), pTable);
+		MsgBox(MB_ICONWARNING, _YW(L"Marta:"), _YW(L"table at %p"), pTable);
 	}
 
 	RtlDispatchAPC(_Y(ApcTest), (ULONG_PTR)_Y(ep), INVALID_HANDLE_VALUE);

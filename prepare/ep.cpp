@@ -195,9 +195,7 @@ struct IMP_HELP
 
 	ULONG _M_n;
 
-	char _M_buf[32];
-
-	PCSTR GetName(ULONG rva);
+	PCSTR GetName(ULONG rva, PBOOL pbOrdinal);
 
 	BOOL Init(PVOID hmod);
 
@@ -217,7 +215,7 @@ struct IMP_HELP
 		ULONG_PTR Va,
 		ULONG s);
 
-	PCSTR GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_THUNK_DATA pThunk);
+	PCSTR GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_THUNK_DATA pThunk, PBOOL pbOrdinal);
 };
 
 BOOL IMP_HELP::Init(PVOID hmod)
@@ -237,7 +235,7 @@ BOOL IMP_HELP::Init(PVOID hmod)
 	return FALSE;
 }
 
-PCSTR IMP_HELP::GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_THUNK_DATA pThunk)
+PCSTR IMP_HELP::GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_THUNK_DATA pThunk, PBOOL pbOrdinal)
 {
 	while (void* Function = *pFunction++)
 	{
@@ -250,14 +248,11 @@ PCSTR IMP_HELP::GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_TH
 
 			if (IMAGE_SNAP_BY_ORDINAL(Thunk.u1.Ordinal))
 			{
-				if (0 < sprintf_s(_M_buf, _countof(_M_buf), "#%u", (ULONG)IMAGE_ORDINAL(Thunk.u1.Ordinal)))
-				{
-					return _M_buf;
-				}
-
-				return 0;
+				*pbOrdinal = TRUE;
+				return (PCSTR)IMAGE_ORDINAL(Thunk.u1.Ordinal);
 			}
 
+			*pbOrdinal = FALSE;
 			return (PCSTR)reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(
 				RtlOffsetToPointer(_M_hmod, Thunk.u1.AddressOfData))->Name;
 		}
@@ -270,48 +265,7 @@ PCSTR IMP_HELP::GetName(ULONG rva, DWORD FirstThunk, void** pFunction, PIMAGE_TH
 	return 0;
 }
 
-PCSTR GetNameFormat(PCSTR str, PCSTR name, ULONG* pn)
-{
-	*pn = 0;
-	if (strcmp(name, str))
-	{
-#ifdef _X86_
-		BOOL f = FALSE;
-		switch (*name++)
-		{
-		case '@':
-			f = TRUE;
-		case '_':
-			if (PCSTR pc = strchr(name, '@'))
-			{
-				if (!memcmp(name, str, pc - name))
-				{
-					ULONG n = strtoul(pc + 1, const_cast<PSTR*>(&pc), 10);
-					if (!*pc && !(n & 3))
-					{
-						*pn = n;
-						// __fastcall : __stdcall
-						return f ? "createFuncF %hs, %hs, %u\r\n" : "createFuncS %hs, %hs, %u\r\n";
-					}
-				}
-			}
-			else if (!strcmp(name, str))
-			{
-				// __cdecl
-				return "createFuncC %hs, %hs\r\n";
-			}
-			break;
-		}
-#endif
-
-		return 0;
-	}
-
-	// name == str
-	return "createFunc %hs, %hs\r\n";
-}
-
-PCSTR IMP_HELP::GetName(ULONG rva)
+PCSTR IMP_HELP::GetName(ULONG rva, PBOOL pbOrdinal)
 {
 	PVOID hmod = _M_hmod;
 	ULONG n = _M_n;
@@ -319,7 +273,7 @@ PCSTR IMP_HELP::GetName(ULONG rva)
 
 	if (void** pFunction = _M_pFunction)
 	{
-		if (PCSTR name = GetName(rva, RtlPointerToOffset(hmod, pFunction), pFunction, _M_pThunk))
+		if (PCSTR name = GetName(rva, RtlPointerToOffset(hmod, pFunction), pFunction, _M_pThunk, pbOrdinal))
 		{
 			return name;
 		}
@@ -345,7 +299,7 @@ PCSTR IMP_HELP::GetName(ULONG rva)
 			{
 				if (PCSTR name = GetName(rva, FirstThunk,
 					(void**)RtlOffsetToPointer(hmod, FirstThunk),
-					(PIMAGE_THUNK_DATA)RtlOffsetToPointer(hmod, OriginalFirstThunk)))
+					(PIMAGE_THUNK_DATA)RtlOffsetToPointer(hmod, OriginalFirstThunk), pbOrdinal))
 				{
 					return name;
 				}
@@ -357,6 +311,18 @@ PCSTR IMP_HELP::GetName(ULONG rva)
 	return 0;
 }
 
+ULONG HashString(PCSTR lpsz, ULONG hash = 0)
+{
+	while (char c = *lpsz++) hash = hash * 33 ^ c;
+	return hash;
+}
+
+ULONG HashString(PCWSTR lpsz, ULONG hash = 0)
+{
+	while (WCHAR c = *lpsz++) hash = hash * 33 ^ c;
+	return hash;
+}
+
 NTSTATUS IMP_HELP::ProcessMAP(
 	PCWSTR pszImp,
 	PSTR pcsz,
@@ -365,6 +331,7 @@ NTSTATUS IMP_HELP::ProcessMAP(
 	ULONG_PTR Va,
 	ULONG s)
 {
+	PVOID hmod = _M_hmod;
 	PSTR buf = pcsz, psz = buf;
 
 	ULONG64 u;
@@ -375,8 +342,6 @@ __0:
 	PSTR pcszLine = pcsz;
 
 	static const char plai[] = " Preferred load address is ";
-
-	//while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
 
 	if (!f && !memcmp(pcsz, plai, _countof(plai) - 1))
 	{
@@ -437,6 +402,7 @@ __0:
 	}
 	else
 	{
+		// <iSection>:<ofs> <s>H .idata$5                DATA
 		i = strtoul(pcsz + 1, &pcsz, 16);
 
 		if ('H' != *pcsz || s != i)
@@ -453,6 +419,8 @@ __0:
 	NTSTATUS status;
 
 __loop:
+	void** ppfn = (void**)RtlOffsetToPointer(hmod, Va - ImageBase);
+	void* pfn = *ppfn;
 
 	i = strtoul(pcsz, const_cast<char**>(&pcsz), 16);
 
@@ -465,7 +433,21 @@ __loop:
 
 	if (' ' != *pcsz || ofs != i)
 	{
-		return STATUS_BAD_DATA;
+		//while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
+		// zero end IAT
+		do
+		{
+			if (*ppfn++)
+			{
+				DbgPrint("##!! ofs(%p) != i(%p) !!##\r\n", ofs, i);
+				return STATUS_BAD_DATA;
+			}
+
+		} while (s -= sizeof(PVOID));
+
+	__ok:
+		status = SaveToFile(pszImp, buf, RtlPointerToOffset(buf, psz), TRUE);
+		return 0 > status ? status : STATUS_MORE_PROCESSING_REQUIRED;
 	}
 
 	ofs += sizeof(PVOID);
@@ -508,6 +490,7 @@ __space:
 
 		if (Va != u)
 		{
+			DbgPrint("##!! Va(%p) != u(%p) !!##\r\n", Va, u);
 			return STATUS_BAD_DATA;
 		}
 
@@ -558,19 +541,19 @@ __space:
 
 		if (__imp_)
 		{
+			if (!pfn)
+			{
+				DbgPrint("##!! pfn !!## at %p\r\n", u);
+				return STATUS_BAD_DATA;
+			}
+
 			__imp_ = FALSE;
 
-			if (PCSTR str = GetName((ULONG)(u - ImageBase)))
+			BOOL bOrdinal;
+			if (PCSTR str = GetName((ULONG)(u - ImageBase), &bOrdinal))
 			{
-				ULONG np;
-				if (PCSTR fmt = GetNameFormat(str, name, &np))
-				{
-					k = sprintf_s(psz, cb, fmt, pszLib, str, np);
-				}
-				else
-				{
-					k = sprintf_s(psz, cb, "createFunc? %hs, %hs, '%hs'\r\n", pszLib, name, str);
-				}
+				k = sprintf_s(psz, cb, "createFunc %hs, %hs, 0%08xh\r\n", pszLib, name, 
+					bOrdinal ? 0x80000000|(ULONG)(ULONG_PTR)str : HashString(str));
 			}
 			else
 			{
@@ -579,6 +562,12 @@ __space:
 		}
 		else
 		{
+			if (pfn)
+			{
+				DbgPrint("##!! pfn=%p !!## at %p\r\n", pfn, u);
+				return STATUS_BAD_DATA;
+			}
+
 			if (!_stricmp(pszDLL, "ntdll.dll"))
 			{
 				pszDLL = "";
@@ -599,8 +588,7 @@ __space:
 			goto __loop;
 		}
 
-		status = SaveToFile(pszImp, buf, RtlPointerToOffset(buf, psz), TRUE);
-		return 0 > status ? status : STATUS_MORE_PROCESSING_REQUIRED;
+		goto __ok;
 	}
 }
 
@@ -629,180 +617,178 @@ NTSTATUS IMP_HELP::ProcessMAP(
 	return status;
 }
 
-NTSTATUS ProcessIAT(PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
+NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
 {
-	if (PVOID hmod = GetModuleHandleW(0))
+	ULONG s;
+
+	union {
+		PVOID pv;
+		PBYTE pb;
+		PIMAGE_BASE_RELOCATION pibr;
+	};
+
+	if (pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_IAT, &s))
 	{
-		ULONG s;
+		DbgPrint("IAT: %p [%x]\r\n", pv, s);
 
-		union {
-			PVOID pv;
-			PBYTE pb;
-			PIMAGE_BASE_RELOCATION pibr;
-		};
-
-		if (pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_IAT, &s))
+		if (!s || (s & (sizeof(PVOID) - 1)))
 		{
-			DbgPrint("IAT: %p [%x]\r\n", pv, s);
-
-			if (!s || (s & (sizeof(PVOID) - 1)))
-			{
-				return STATUS_INTERNAL_ERROR;
-			}
-
-			DbgPrint("Delete(\"%ws\")=%x\r\n", pczObj, DeleteFileW(pczObj) ? 0 : RtlGetLastNtStatus());
-
-			if (PIMAGE_NT_HEADERS pinth = RtlImageNtHeader(hmod))
-			{
-				if (ULONG NumberOfSections = pinth->FileHeader.NumberOfSections)
-				{
-					ULONG_PTR Rva = (ULONG_PTR)pv - (ULONG_PTR)hmod;
-
-					ULONG iSection = 0;
-					PIMAGE_SECTION_HEADER pish = IMAGE_FIRST_SECTION(pinth);
-					do
-					{
-						++iSection;
-
-						ULONG_PTR Ofs = Rva - pish->VirtualAddress;
-
-						if (Ofs < pish->Misc.VirtualSize)
-						{
-							if (Ofs + s <= pish->Misc.VirtualSize)
-							{
-								IMP_HELP imh;
-								if (imh.Init(hmod))
-								{
-									return imh.ProcessMAP(pszImp, pszMap, iSection, (ULONG)Ofs, Rva, s);
-								}
-							}
-
-							break;
-						}
-					} while (pish++, --NumberOfSections);
-				}		
-			}
-
 			return STATUS_INTERNAL_ERROR;
 		}
 
-		if (pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_BASERELOC, &s))
+		DbgPrint("Delete(\"%ws\")=%x\r\n", pczObj, DeleteFileW(pczObj) ? 0 : RtlGetLastNtStatus());
+
+		if (PIMAGE_NT_HEADERS pinth = RtlImageNtHeader(hmod))
 		{
-			pvShellEnd -= (ULONG_PTR)hmod;
+			if (ULONG NumberOfSections = pinth->FileHeader.NumberOfSections)
+			{
+				ULONG_PTR Rva = (ULONG_PTR)pv - (ULONG_PTR)hmod;
+
+				ULONG iSection = 0;
+				PIMAGE_SECTION_HEADER pish = IMAGE_FIRST_SECTION(pinth);
+				do
+				{
+					++iSection;
+
+					ULONG_PTR Ofs = Rva - pish->VirtualAddress;
+
+					if (Ofs < pish->Misc.VirtualSize)
+					{
+						if (Ofs + s <= pish->Misc.VirtualSize)
+						{
+							IMP_HELP imh;
+							if (imh.Init(hmod))
+							{
+								return imh.ProcessMAP(pszImp, pszMap, iSection, (ULONG)Ofs, Rva, s);
+							}
+						}
+
+						break;
+					}
+				} while (pish++, --NumberOfSections);
+			}
+		}
+
+		return STATUS_INTERNAL_ERROR;
+	}
+
+	if (pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_BASERELOC, &s))
+	{
+		pvShellEnd -= (ULONG_PTR)hmod;
 
 #ifdef _X86_
-			BOOL bFirst = TRUE;
-			PVOID pvTarget = 0;
+		BOOL bFirst = TRUE;
+		PVOID pvTarget = 0;
 #endif // _X86_
+
+		do
+		{
+			ULONG SizeOfBlock = pibr->SizeOfBlock;
+
+			if (SizeOfBlock < sizeof(IMAGE_BASE_RELOCATION))
+			{
+				return STATUS_INVALID_IMAGE_FORMAT;
+			}
+
+			ULONG VirtualAddress = pibr->VirtualAddress;
+
+			struct TYPE_OFFSET
+			{
+				WORD ofs : 12;
+				WORD type : 4;
+			}*pu = (TYPE_OFFSET*)(pibr + 1);
+
+			pb += SizeOfBlock, s -= SizeOfBlock, SizeOfBlock -= sizeof(IMAGE_BASE_RELOCATION);
+
+			if (SizeOfBlock & (sizeof(WORD) - 1))
+			{
+				return STATUS_INVALID_IMAGE_FORMAT;
+			}
+
+			SizeOfBlock >>= 1;
 
 			do
 			{
-				ULONG SizeOfBlock = pibr->SizeOfBlock;
-
-				if (SizeOfBlock < sizeof(IMAGE_BASE_RELOCATION))
+				if (pu->type)
 				{
-					return STATUS_INVALID_IMAGE_FORMAT;
-				}
+					//DbgPrint("\t## %x %08x\r\n", pu->type, VirtualAddress + pu->ofs);
 
-				ULONG VirtualAddress = pibr->VirtualAddress;
-
-				struct TYPE_OFFSET
-				{
-					WORD ofs : 12;
-					WORD type : 4;
-				}*pu = (TYPE_OFFSET*)(pibr + 1);
-
-				pb += SizeOfBlock, s -= SizeOfBlock, SizeOfBlock -= sizeof(IMAGE_BASE_RELOCATION);
-
-				if (SizeOfBlock & (sizeof(WORD) - 1))
-				{
-					return STATUS_INVALID_IMAGE_FORMAT;
-				}
-
-				SizeOfBlock >>= 1;
-
-				do
-				{
-					if (pu->type)
+					if (VirtualAddress + pu->ofs < pvShellEnd)
 					{
-						//DbgPrint("\t## %x %08x\r\n", pu->type, VirtualAddress + pu->ofs);
-
-						if (VirtualAddress + pu->ofs < pvShellEnd)
-						{
-							ULONG rva = VirtualAddress + pu->ofs;
-							union {
-								PVOID prv;
-								PBYTE prb;
-								PULONG pru;
-							};
-							prv = RtlOffsetToPointer(hmod, rva);
+						ULONG rva = VirtualAddress + pu->ofs;
+						union {
+							PVOID prv;
+							PBYTE prb;
+							PULONG pru;
+						};
+						prv = RtlOffsetToPointer(hmod, rva);
 
 #ifdef _X86_
 
-							if (IMAGE_REL_BASED_HIGHLOW == pu->type)
-							{
-								ULONG Target = *pru - (ULONG)hmod;
-								DbgPrint("!! Exist Relocs: %08x -> %08x\r\n", rva, Target);
+						if (IMAGE_REL_BASED_HIGHLOW == pu->type)
+						{
+							ULONG Target = *pru - (ULONG)hmod;
+							DbgPrint("!! Exist Relocs: %08x -> %08x\r\n", rva, Target);
 
-								// while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
-								if (pvShellEnd <= Target)
+							// while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
+							if (pvShellEnd <= Target)
+							{
+								DbgPrint("reloc to %08x beyond shell end (%08x)\r\n", Target, pvShellEnd);
+								return STATUS_ILLEGAL_DLL_RELOCATION;
+							}
+
+							if (bFirst)
+							{
+								bFirst = FALSE;
+								if (Target + 8 != rva)
 								{
-									DbgPrint("reloc to %08x beyond shell end (%08x)\r\n", Target, pvShellEnd);
+									DbgPrint("_Target(%p) + 8 != rva(%x)\r\n", Target, rva);
 									return STATUS_ILLEGAL_DLL_RELOCATION;
 								}
 
-								if (bFirst)
-								{
-									bFirst = FALSE;
-									if (Target + 8 != rva)
-									{
-										DbgPrint("_Target(%p) + 8 != rva(%x)\r\n", Target, rva);
-										return STATUS_ILLEGAL_DLL_RELOCATION;
-									}
-									
-									pvTarget = RtlOffsetToPointer(hmod, Target);
+								pvTarget = RtlOffsetToPointer(hmod, Target);
 
-									DbgPrint("__Address: %p\r\n", pvTarget);
-								}
-								else
-								{
-									CHAR msg[0x80];
-									ULONG cch = _countof(msg);
-									if (CryptBinaryToStringA((PBYTE)*pru, 16, CRYPT_STRING_HEXASCII, msg, &cch))
-									{
-										DbgPrint("\t%hs\r\n", msg);
-									}
-#if 0
-									// mov ecx,offset x
-									if (0xb9 != prb[-1])
-									{
-										return STATUS_ILLEGAL_DLL_RELOCATION;
-									}
-									++pru;
-
-									// call __Address;
-									if (0xe8 != *prb++)
-									{
-										return STATUS_ILLEGAL_DLL_RELOCATION;
-									}
-
-									ULONG ofs = *pru++;
-
-									DbgPrint("call %p (%p + %08x)\r\n", prb + ofs, prb, ofs);
-
-									if (prb + ofs != pvTarget)
-									{
-										return STATUS_ILLEGAL_DLL_RELOCATION;
-									}
-#endif // 0
-								}
+								DbgPrint("__Address: %p\r\n", pvTarget);
 							}
 							else
-#endif // _X86_
 							{
-								DbgPrint("######## !! Exist Relocs (%x:%08x) !! ########\r\n", pu->type, rva);
-								return STATUS_ILLEGAL_DLL_RELOCATION;
+								CHAR msg[0x80];
+								ULONG cch = _countof(msg);
+								if (CryptBinaryToStringA((PBYTE)*pru, 16, CRYPT_STRING_HEXASCII, msg, &cch))
+								{
+									DbgPrint("\t%hs\r\n", msg);
+								}
+#if 0
+								// mov ecx,offset x
+								if (0xb9 != prb[-1])
+								{
+									return STATUS_ILLEGAL_DLL_RELOCATION;
+								}
+								++pru;
+
+								// call __Address;
+								if (0xe8 != *prb++)
+								{
+									return STATUS_ILLEGAL_DLL_RELOCATION;
+								}
+
+								ULONG ofs = *pru++;
+
+								DbgPrint("call %p (%p + %08x)\r\n", prb + ofs, prb, ofs);
+
+								if (prb + ofs != pvTarget)
+								{
+									return STATUS_ILLEGAL_DLL_RELOCATION;
+								}
+#endif // 0
 							}
+							}
+						else
+#endif // _X86_
+						{
+							DbgPrint("######## !! Exist Relocs (%x:%08x) !! ########\r\n", pu->type, rva);
+							return STATUS_ILLEGAL_DLL_RELOCATION;
+						}
 						}
 					}
 				} while (pu++, --SizeOfBlock);
@@ -810,12 +796,9 @@ NTSTATUS ProcessIAT(PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShel
 			} while (s);
 		}
 
-		DbgPrint("!! NO IMPORT, NO RELOCS. OK !!\r\n");
+	DbgPrint("!! NO IMPORT, NO RELOCS. OK !!\r\n");
 
-		return STATUS_SUCCESS;
-	}
-
-	return STATUS_INTERNAL_ERROR;
+	return STATUS_SUCCESS;
 }
 
 NTSTATUS I_CreateAsmSC(PCWSTR pwzFileName, const void* pcv, SIZE_T cb)
@@ -1161,7 +1144,7 @@ NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 					}
 				}
 
-				NTSTATUS status = ProcessIAT(pczObj, pczImp, pczMap, (ULONG_PTR)Base + cb);
+				NTSTATUS status = ProcessIAT(ImageBase, pczObj, pczImp, pczMap, (ULONG_PTR)Base + cb);
 
 				if (0 <= status)
 				{

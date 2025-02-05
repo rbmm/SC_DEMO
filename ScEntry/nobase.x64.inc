@@ -61,11 +61,7 @@ name proc private
 name endp
 endm
 
-; hmod   : hmod for dll
-; name   : decorated name of the function (as in lib file )
-; string : name from dll export table or #ordinal ( #123 )
-
-createFunc? macro hmod, name, string
+createFunc macro hmod, name, hash
 name proc
 	call hmod
 	lea r10,@@1
@@ -73,17 +69,15 @@ name proc
 	ALIGN 8
 @@1: 
 	DQ 0
-	DB string,0
+	DD hash
 name endp
 endm
 
-; name == string
-createFunc macro hmod, string
-createFunc? hmod, string, '&string'
-endm
+; void *__cdecl get_hmod(const wchar_t *)
+extern ?get_hmod@@YAPEAXPEB_W@Z : PROC
 
-extern ?get_hmod@@YAPEAXPEB_W@Z : PROC ; void *__cdecl get_hmod(const wchar_t *)
-extern ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@PEBD@Z : PROC ; void *__cdecl GetFuncAddressEx(struct _IMAGE_DOS_HEADER *,const char *)
+; void *__cdecl GetFuncAddressEx(struct _IMAGE_DOS_HEADER *,unsigned long)
+extern ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@K@Z : PROC
 
 ; r10 -> func, r11 -> hmod
 common_imp_call proc private
@@ -106,9 +100,9 @@ common_imp_call proc private
   mov r10,[rsp + 30h]
   mov [r11],rax ; hmod = get_hmod, save dll address
 @@2:
-  lea rdx,[r10 + 8]
+  mov edx,[r10 + 8]
   mov rcx,rax
-  call ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@PEBD@Z
+  call ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@K@Z
   add rsp,28h
   pop r11
   pop r10
