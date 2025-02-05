@@ -16,7 +16,7 @@
     <ProjectGuid>{633C619A-510e-E3D4-D208-18F6763417D4}</ProjectGuid>
     <RootNamespace>hello</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <UserRootDir>$(SolutionDir)..\MSBuild\v4.0</UserRootDir>
+    <UserRootDir>$(SolutionDir)MSBuild\v4.0</UserRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -35,7 +35,7 @@
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\pnth</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)pnth</AdditionalIncludeDirectories>
       <AdditionalOptions>/cbstring %(AdditionalOptions)</AdditionalOptions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
