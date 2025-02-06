@@ -1,6 +1,6 @@
  hello
 
- Timestamp is 67a4d32c (Thu Feb  6 17:20:12 2025)
+ Timestamp is 67a535d6 (Fri Feb  7 00:21:10 2025)
 
  Preferred load address is 00400000
 
@@ -59,27 +59,27 @@
  0001:00000037       ?__Address@@YIPAXPBX@Z     00401037 f   x86.obj
  0001:0000004a       __alloca_probe             0040104a f   x86.obj
  0001:0000004a       __chkstk                   0040104a f   x86.obj
- 0001:000000c2       @DnsMapRcodeToStatus@4     004010c2 f   x86.obj
- 0001:000000e3       @DnsStatusString@4         004010e3 f   x86.obj
- 0001:00000104       _GetTickCount@0            00401104 f   x86.obj
- 0001:00000125       _FormatMessageW@28         00401125 f   x86.obj
- 0001:00000146       _IsProcessCritical@8       00401146 f   x86.obj
- 0001:00000167       _ExitProcess@4             00401167 f   x86.obj
- 0001:00000188       ?GetMartaExtensionInterface@@YGPAU_ACC_MARTA_FUNCTIONS@@XZ 00401188 f   x86.obj
- 0001:000001a9       _MessageBoxW@16            004011a9 f   x86.obj
- 0001:000001ca       _DbgPrint                  004011ca f   x86.obj
- 0001:000001eb       __vsnwprintf               004011eb f   x86.obj
- 0001:0000020c       _RtlDispatchAPC@12         0040120c f   x86.obj
- 0001:0000022d       _LdrGetProcedureAddress@16 0040122d f   x86.obj
- 0001:0000024e       _RtlInitAnsiString@8       0040124e f   x86.obj
- 0001:0000026f       _RtlMultiByteToUnicodeN@20 0040126f f   x86.obj
- 0001:00000290       _RtlMultiByteToUnicodeSize@12 00401290 f   x86.obj
- 0001:000002b1       _LdrLoadDll@16             004012b1 f   x86.obj
- 0001:000002d2       _RtlInitUnicodeString@8    004012d2 f   x86.obj
- 0001:000002f3       _CoCreateInstance@20       004012f3 f   x86.obj
- 0001:00000314       _CoInitializeEx@8          00401314 f   x86.obj
- 0001:00000335       _CoTaskMemFree@4           00401335 f   x86.obj
- 0001:00000356       _CoUninitialize@0          00401356 f   x86.obj
+ 0001:000000ca       @DnsMapRcodeToStatus@4     004010ca f   x86.obj
+ 0001:000000eb       @DnsStatusString@4         004010eb f   x86.obj
+ 0001:0000010c       _GetTickCount@0            0040110c f   x86.obj
+ 0001:0000012d       _FormatMessageW@28         0040112d f   x86.obj
+ 0001:0000014e       _IsProcessCritical@8       0040114e f   x86.obj
+ 0001:0000016f       _ExitProcess@4             0040116f f   x86.obj
+ 0001:00000190       ?GetMartaExtensionInterface@@YGPAU_ACC_MARTA_FUNCTIONS@@XZ 00401190 f   x86.obj
+ 0001:000001b1       _MessageBoxW@16            004011b1 f   x86.obj
+ 0001:000001d2       _DbgPrint                  004011d2 f   x86.obj
+ 0001:000001f3       __vsnwprintf               004011f3 f   x86.obj
+ 0001:00000214       _RtlDispatchAPC@12         00401214 f   x86.obj
+ 0001:00000235       _LdrGetProcedureAddress@16 00401235 f   x86.obj
+ 0001:00000256       _RtlInitAnsiString@8       00401256 f   x86.obj
+ 0001:00000277       _RtlMultiByteToUnicodeN@20 00401277 f   x86.obj
+ 0001:00000298       _RtlMultiByteToUnicodeSize@12 00401298 f   x86.obj
+ 0001:000002b9       _LdrLoadDll@16             004012b9 f   x86.obj
+ 0001:000002da       _RtlInitUnicodeString@8    004012da f   x86.obj
+ 0001:000002fb       _CoCreateInstance@20       004012fb f   x86.obj
+ 0001:0000031c       _CoInitializeEx@8          0040131c f   x86.obj
+ 0001:0000033d       _CoTaskMemFree@4           0040133d f   x86.obj
+ 0001:0000035e       _CoUninitialize@0          0040135e f   x86.obj
  0001:00000380       __alloca_probe_16          00401380 f   ntdllp:alloca16.obj
  0001:00000396       __alloca_probe_8           00401396     ntdllp:alloca16.obj
  0001:000003ac       ?MsgBox@@YAHIPB_W0ZZ       004013ac f   ep.obj

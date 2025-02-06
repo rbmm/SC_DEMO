@@ -149,8 +149,12 @@ protect proc private
 	mov edx,051E57A46h  ; HashString("ZwProtectVirtualMemory")
 	call ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@K@Z
 
-	lea rcx,@imp_end@
 	lea rdx,@imp_begin@
+	
+	test edx,0FFFh
+	jne @@2				; not aligned !
+	
+	lea rcx,@imp_end@
 	sub rcx,rdx
 	mov [rsp + 28h],rdx ; BaseAddress
 	mov [rsp + 30h],rcx ; RegionSize
@@ -166,6 +170,7 @@ protect proc private
 	dec rcx				; rcx = -1 = NtCurrentProcess()
 
 	call rax
+@@2:
 	add rsp,40h
 	pop r9
 	pop r8

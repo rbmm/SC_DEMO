@@ -158,14 +158,18 @@ protect proc private
 	
 	sub esp,12
 	
+	lea ecx,@imp_begin@
+	test ecx,0FFFh
+	jnz @@1
+	
+	lea edx,@imp_end@
+	sub edx,ecx
+	
 	lea eax,[esp]       ; &OldProtect
 	push eax
 	
 	push 4              ; PAGE_READWRITE
 	
-	lea edx,@imp_end@
-	lea ecx,@imp_begin@
-	sub edx,ecx
 	mov [esp + 12],edx ; RegionSize
 	
 	lea eax,[esp + 12] ; &RegionSize
@@ -186,6 +190,7 @@ protect proc private
 	call ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@K@Z
 	call eax
 	
+@@1:
 	add esp,12
 
 	pop edx

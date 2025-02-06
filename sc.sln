@@ -13,6 +13,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "template", "template\templa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewScProj", "NewScProj\NewScProj.vcxproj", "{68C81E6E-EA30-65AF-2725-CF136FD0975C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LIB", "LIB", "{A9103F0B-DF36-4416-9673-20B97ABBBD3C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tool", "Tool", "{7909A239-777A-43FD-80D6-6ADAADEF4BF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x64 = Release|x64
@@ -42,8 +46,13 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E91A4892-8E4C-D8B7-599C-3358FFF20CB6} = {A9103F0B-DF36-4416-9673-20B97ABBBD3C}
+		{48578B25-F1CE-1033-484C-76884D05DA77} = {A9103F0B-DF36-4416-9673-20B97ABBBD3C}
+		{68C81E6E-EA30-65AF-2725-CF136FD0975C} = {7909A239-777A-43FD-80D6-6ADAADEF4BF4}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5C43FF36-EEA7-4C75-B922-01379AADF7D7}
 		    SolutionGuid = {80B18789-2ECF-47FE-A35C-FBA2F85928EA}
+		SolutionGuid = {5C43FF36-EEA7-4C75-B922-01379AADF7D7}
 	EndGlobalSection
 EndGlobal
