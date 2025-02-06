@@ -3,8 +3,8 @@
   <ImportGroup Label="PropertySheets">
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <INC_ROOT>$(WindowsSdkDir)Include\$(TargetPlatformVersion)\</INC_ROOT>
-    <LIB_ROOT>$(WindowsSdkDir)Lib\$(TargetPlatformVersion)\</LIB_ROOT>
+    <INC_ROOT>$(WindowsKitsRoot)Include\$(TargetPlatformVersion)\</INC_ROOT>
+    <LIB_ROOT>$(WindowsKitsRoot)Lib\$(TargetPlatformVersion)\</LIB_ROOT>
   </PropertyGroup>
   <PropertyGroup>
     <IncludePath>$(INC_ROOT)shared;$(INC_ROOT)km;$(INC_ROOT)um;$(INC_ROOT)km\crt</IncludePath>

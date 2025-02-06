@@ -43,7 +43,7 @@
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories >$(SolutionDir)pnth</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)pnth</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -51,9 +51,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableUAC>false</EnableUAC>
       <AdditionalOptions>/EMITPOGOPHASEINFO /EMITVOLATILEMETADATA:NO %(AdditionalOptions)</AdditionalOptions>
-      <NoEntryPoint >true</NoEntryPoint>
-      <ModuleDefinitionFile >Source.def</ModuleDefinitionFile>
-      <AdditionalDependencies >BufferOverflow.lib;ucrt.lib;ntdllp.lib;kernel32.lib;cabinet.lib;bcrypt.lib;crypt32.lib</AdditionalDependencies>
+      <NoEntryPoint>true</NoEntryPoint>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <AdditionalDependencies>BufferOverflow.lib;ucrt.lib;ntdllp.lib;kernel32.lib;cabinet.lib;bcrypt.lib;crypt32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -61,6 +61,8 @@
     <ClCompile Include="ep.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ShowIncludes>
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ShowIncludes>
     </ClCompile>
     <None Include="Source.def" />
   </ItemGroup>
