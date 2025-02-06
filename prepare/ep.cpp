@@ -731,7 +731,7 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 							DbgPrint("!! Exist Relocs: %08x -> %08x\r\n", rva, Target);
 
 							// while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
-							if (pvShellEnd <= Target)
+							if (pvShellEnd < Target)
 							{
 								DbgPrint("reloc to %08x beyond shell end (%08x)\r\n", Target, pvShellEnd);
 								return STATUS_ILLEGAL_DLL_RELOCATION;
@@ -1080,7 +1080,7 @@ NTSTATUS CreateExeSC(PCWSTR pwzFileName, PVOID Base, ULONG cb, PVOID ImageBase)
 		pe->ish.VirtualAddress = 0x1000;
 		pe->ish.SizeOfRawData = cb;
 		pe->ish.PointerToRawData = sizeof(PE);
-		pe->ish.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
+		pe->ish.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
 
 		memcpy(pe->text, Base, cb);
 
@@ -1098,11 +1098,6 @@ NTSTATUS CreateExeSC(PCWSTR pwzFileName, PVOID Base, ULONG cb, PVOID ImageBase)
 
 NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 {
-	if (IsDebuggerPresent())
-	{
-		return VirtualProtect(Base, cb, PAGE_EXECUTE_READWRITE, &cb) ? 0 : RtlGetLastNtStatus();
-	}
-
 	DbgPrint("PrepareSC(%p, %x, <%ws>)\r\n", Base, cb, GetCommandLineW());
 
 	//*map*obj*imp*[bin]*[?password?asm][*exe]

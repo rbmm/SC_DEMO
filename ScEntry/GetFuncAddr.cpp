@@ -7,6 +7,8 @@
 
 PVOID GetNtBase()
 {
+	CPP_FUNCTION;
+
 	return CONTAINING_RECORD(NtCurrentTeb()->ProcessEnvironmentBlock->Ldr->InInitializationOrderModuleList.Flink,
 		_LDR_DATA_TABLE_ENTRY, InInitializationOrderLinks)->DllBase;
 }

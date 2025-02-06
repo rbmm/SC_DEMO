@@ -3,6 +3,7 @@ createFunc dnsapi, DnsStatusString, 0bfe22618h
 
 HMOD dnsapi, <DNSAPI.dll>
 
+createFunc kernel32, GetTickCount, 0bb509c20h
 createFunc kernel32, FormatMessageW, 0b8c2559fh
 createFunc kernel32, IsProcessCritical, 039cba57ah
 createFunc kernel32, ExitProcess, 054dfc7ebh
@@ -18,8 +19,8 @@ createFunc user32, MessageBoxW, 0dd240029h
 HMOD user32, <USER32.dll>
 
 createFunc ntdllp, DbgPrint, 0d6648df0h
-createFunc ntdllp, RtlDispatchAPC, 080000008h
 createFunc ntdllp, _vsnwprintf, 09513c274h
+createFunc ntdllp, RtlDispatchAPC, 080000008h
 createFunc ntdllp, LdrGetProcedureAddress, 041f9a797h
 createFunc ntdllp, RtlInitAnsiString, 00d40a150h
 createFunc ntdllp, RtlMultiByteToUnicodeN, 0af775063h

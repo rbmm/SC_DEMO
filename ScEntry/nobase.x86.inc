@@ -28,34 +28,41 @@ name endp
 endm
 
 HMOD macro name, str
-  ALIGN 4
-  nop
-  nop
-  nop
-name proc private
-  call @@1
-  DD 0
-  WSTRING str
-@@1:
-  pop ecx
 
-  ret
-name endp
+_TEXT$cpp$u SEGMENT ALIGN(4096)
+	ALIGN 4
+@CatStr(@,name) LABEL BYTE
+	DD 0
+	WSTRING str
+_TEXT$cpp$u ENDS
+
+.code
+
 endm
 
 createFunc macro hmod, name, hash
-  ALIGN 4
-  nop
-  nop
+_TEXT$cpp$u SEGMENT ALIGN(4096)
+	ALIGN 4
+@CatStr(?,name) LABEL BYTE
+	DD 0
+	DD hash
+_TEXT$cpp$u ENDS
+
+.code
+
 name proc
-  call hmod
-  call @@1
-  DD 0
-  DD hash
-@@1: 
-  pop edx
+  push ecx
+  push edx
+  lea ecx,@CatStr(@,hmod)
+  call ?__Address@@YIPAXPBX@Z
+  push eax
+  lea ecx,@CatStr(?,name)
+  call ?__Address@@YIPAXPBX@Z
+  mov edx,eax
+  pop ecx
   jmp common_imp_call
 name endp
+
 endm
 
 ; void *__fastcall get_hmod(const wchar_t *)
@@ -86,6 +93,8 @@ common_imp_call proc private
   pop edx
   mov [edx],eax ; func = GetFuncAddressEx, save func address
 @@1:
+  pop edx
+  pop ecx
   jmp eax
 common_imp_call endp
 
@@ -129,6 +138,61 @@ __alloca_probe proc
    jmp         @@1
 __alloca_probe endp
 __chkstk endp
+
+_TEXT$cpp$u SEGMENT ALIGN(4096)
+@imp_begin@ LABEL BYTE
+_TEXT$cpp$u ENDS
+
+_TEXT$cpp$v SEGMENT
+@imp_end@ LABEL BYTE
+_TEXT$cpp$v ENDS
+
+.code
+
+; void *__stdcall GetNtBase()
+extern ?GetNtBase@@YGPAXXZ : PROC
+
+protect proc private
+	push ecx
+	push edx
+	
+	sub esp,12
+	
+	lea eax,[esp]       ; &OldProtect
+	push eax
+	
+	push 4              ; PAGE_READWRITE
+	
+	lea edx,@imp_end@
+	lea ecx,@imp_begin@
+	sub edx,ecx
+	mov [esp + 12],edx ; RegionSize
+	
+	lea eax,[esp + 12] ; &RegionSize
+	push eax
+	
+	call ?__Address@@YIPAXPBX@Z
+	mov [esp + 20],eax ; BaseAddress
+	lea eax,[esp + 20] ; &BaseAddress
+	push eax
+
+	xor eax,eax
+	dec eax				; eax = -1 = NtCurrentProcess()
+	push eax
+
+	call ?GetNtBase@@YGPAXXZ
+	mov ecx,eax
+	mov edx,051E57A46h  ; HashString("ZwProtectVirtualMemory")
+	call ?GetFuncAddressEx@@YIPAXPAU_IMAGE_DOS_HEADER@@K@Z
+	call eax
+	
+	add esp,12
+
+	pop edx
+	pop ecx
+	ret
+	
+protect endp
 
 
 

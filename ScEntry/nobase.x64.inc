@@ -51,25 +51,33 @@ name endp
 endm
 
 HMOD macro name, str
-name proc private
-	lea r11,@@1
-	ret
+
+_TEXT$cpp$u SEGMENT ALIGN(4096)
 	ALIGN 8
-@@1:
+@CatStr(@,name) LABEL BYTE
 	DQ 0
 	WSTRING str
-name endp
+_TEXT$cpp$u ENDS
+
+.code
+
 endm
 
 createFunc macro hmod, name, hash
-name proc
-	call hmod
-	lea r10,@@1
-	jmp common_imp_call
+
+_TEXT$cpp$u SEGMENT ALIGN(4096)
 	ALIGN 8
-@@1: 
+@CatStr(?,name) LABEL BYTE
 	DQ 0
 	DD hash
+_TEXT$cpp$u ENDS
+
+.code
+
+name proc
+	lea r11,@CatStr(@,hmod)
+	lea r10,@CatStr(?,name)
+	jmp common_imp_call
 name endp
 endm
 
@@ -114,3 +122,56 @@ common_imp_call proc private
 @@1:
   jmp rax
 common_imp_call endp
+
+_TEXT$cpp$u SEGMENT ALIGN(4096)
+@imp_begin@ LABEL BYTE
+_TEXT$cpp$u ENDS
+
+_TEXT$cpp$v SEGMENT
+@imp_end@ LABEL BYTE
+_TEXT$cpp$v ENDS
+
+.code
+
+; void *__cdecl GetNtBase()
+extern ?GetNtBase@@YAPEAXXZ : PROC
+
+protect proc private
+	push rcx
+	push rdx
+	push r8
+	push r9
+	
+	sub rsp,40h
+	
+	call ?GetNtBase@@YAPEAXXZ
+	mov rcx,rax
+	mov edx,051E57A46h  ; HashString("ZwProtectVirtualMemory")
+	call ?GetFuncAddressEx@@YAPEAXPEAU_IMAGE_DOS_HEADER@@K@Z
+
+	lea rcx,@imp_end@
+	lea rdx,@imp_begin@
+	sub rcx,rdx
+	mov [rsp + 28h],rdx ; BaseAddress
+	mov [rsp + 30h],rcx ; RegionSize
+
+	lea rcx,[rsp + 38h] ; &OldProtect
+	mov [rsp + 20h],rcx 
+
+	mov r9,4            ; PAGE_READWRITE
+	lea r8,[rsp + 30h]  ; &RegionSize
+	lea rdx,[rsp + 28h] ; &BaseAddress
+
+	xor ecx,ecx
+	dec rcx				; rcx = -1 = NtCurrentProcess()
+
+	call rax
+	add rsp,40h
+	pop r9
+	pop r8
+	pop rdx
+	pop rcx
+	ret
+	
+protect endp
+

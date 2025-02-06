@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9C754736-b96c-46C0-DEA5-BFFBEE10B974}</ProjectGuid>
+    <ProjectGuid>{9C754736-B96C-46C0-DEA5-BFFBEE10B974}</ProjectGuid>
     <RootNamespace>template</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <UserRootDir>$(SolutionDir)MSBuild\v4.0</UserRootDir>
@@ -51,7 +51,7 @@
       <AdditionalDependencies>ntdllp.lib;ScEntry.lib;kernel32.lib;user32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*$(PlatformTarget).obj*imp.$(PlatformTarget).asm**?password?$(ProjectName).$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).exe</Command>
+      <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*$(PlatformTarget).obj*imp.$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).bin*$(ProjectName).$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

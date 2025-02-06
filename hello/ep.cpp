@@ -59,7 +59,7 @@ VOID NTAPI ApcTest(_In_ ULONG_PTR Parameter)
 
 	if (PCSTR pcsz = DnsStatusString(DnsMapRcodeToStatus(DNS_RCODE_YXDOMAIN)))
 	{
-		MsgBox(MB_ICONINFORMATION, _YW(L"Hello"), _YW(L"[%hs]\r\nentry at %p"), pcsz, (PVOID)Parameter);
+		MsgBox(MB_ICONINFORMATION, _YW(L"Hello"), _YW(L"%u:[%hs]\r\nentry at %p"), GetTickCount(), pcsz, (PVOID)Parameter);
 	}
 }
 
