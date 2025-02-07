@@ -75,3 +75,5 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define MAXUCHAR    0xff        // winnt
 #define MAXUSHORT   0xffff      // winnt
 #define MAXULONG    0xffffffff  // winnt
+
+#include "mini_yvals.h"

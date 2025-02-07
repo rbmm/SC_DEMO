@@ -617,6 +617,276 @@ NTSTATUS IMP_HELP::ProcessMAP(
 	return status;
 }
 
+/// <summary>
+#ifdef _X86_
+
+struct RO
+{
+	ULONG rva, ofs;
+
+	static int __cdecl compare(const RO* pa, const RO* pb)
+	{
+		if (pa->rva < pb->rva) return -1;
+		if (pa->rva > pb->rva) return +1;
+		return 0;
+	}
+};
+
+PSTR ProcessMAP2(PSTR pcsz, PIMAGE_NT_HEADERS pinth, ULONG* rva, ULONG* size, ULONG* pn)
+{
+	PSTR buf = pcsz;
+
+	ULONG n = 0;
+	ULONG64 u;
+	ULONG_PTR ImageBase = 0;
+__0:
+
+	static const char plai[] = " Preferred load address is ";
+
+	if (!memcmp(pcsz, plai, _countof(plai) - 1))
+	{
+		if (ImageBase)
+		{
+			return 0;
+		}
+
+		u = _strtoui64(pcsz + _countof(plai) - 1, const_cast<char**>(&pcsz), 16);
+
+		if (!u || '\r' != *pcsz++ || '\n' != *pcsz++)
+		{
+			return 0;
+		}
+
+		ImageBase = (ULONG_PTR)u;
+
+		goto __0;
+	}
+
+	ULONG s = strtoul(pcsz, const_cast<char**>(&pcsz), 16);
+
+	if (':' != *pcsz)
+	{
+	__1:
+		if (!(pcsz = strchr(pcsz, '\r')) || '\n' != *++pcsz)
+		{
+			return 0;
+		}
+
+		if (!*++pcsz)
+		{
+			if (n)
+			{
+				*pn = n;
+				return (PSTR)(((ULONG_PTR)buf + 3) & ~3);
+			}
+
+			return 0;
+		}
+		goto __0;
+	}
+
+	ULONG o = strtoul(pcsz + 1, const_cast<char**>(&pcsz), 16);
+
+	if (' ' != *pcsz)
+	{
+		return 0;
+	}
+
+	if ('0' == *++pcsz)
+	{
+		ULONG i = strtoul(pcsz + 1, &pcsz, 16);
+
+		// <iSection>:<ofs> <s>H segment class
+		if ('H' != *pcsz)
+		{
+			return 0;
+		}
+
+		//skip space
+		while (' ' == *++pcsz);
+
+		PCSTR pszSegmentName = pcsz;
+
+		while (' ' != *++pcsz);
+
+		*pcsz++ = 0;
+		if (!strcmp(pszSegmentName, ".text$mn$cpp$u"))
+		{
+			if (--s < pinth->FileHeader.NumberOfSections)
+			{
+				PIMAGE_SECTION_HEADER pish = IMAGE_FIRST_SECTION(pinth) + s;
+				if (o < pish->Misc.VirtualSize && (o + i) <= pish->Misc.VirtualSize)
+				{
+					*rva = pish->VirtualAddress + o;
+					*size = i;
+				}
+			}
+		}
+
+		goto __1;
+	}
+
+	//skip space
+	while (' ' == *++pcsz);
+
+	PSTR pszFunc = pcsz;
+
+	while (' ' != *++pcsz);
+
+	*pcsz = 0;
+
+	u = _strtoui64(pcsz + 1, &pcsz, 16);
+
+	if (' ' != *pcsz || !ImageBase)
+	{
+		return 0;
+	}
+
+	if (u <= ImageBase)
+	{
+		goto __1;
+	}
+
+	if (0x1000000 < (u -= ImageBase))
+	{
+		goto __1;
+	}
+
+	if (!memcmp("??_C@_", pszFunc, 6))
+	{
+		pszFunc += 6;
+		PSTR pa, pc;
+		switch (*pszFunc++)
+		{
+		case '1':
+			if (pc = strchr(pszFunc, '?'))
+			{
+				pszFunc = pc - 2;
+				*pszFunc = 'L';
+				pszFunc[1] = '\"';
+				if (pa = strrchr(pc, '@'))
+				{
+					*pa = 0;
+					pa = pc;
+					// ?$AA
+					while (pc && '?' == *pc++ && '$' == *pc++ && 'A' == *pc++ && 'A' == *pc++)
+					{
+						char c = *pc++;
+						if ('?' == c)
+						{
+							pc = strchr(pc, '?');
+							c = '.';
+						}
+						*pa++ = c;
+					}
+					*pa++ = '\"', *pa = 0;
+				}
+			}
+			break;
+		case '0':
+			if (pc = strchr(pszFunc, '?'))
+			{
+				// O@HELLMLPH@ApcTest?
+				*pc = '\"', * ++pc = 0;
+				if (pc = strrchr(pszFunc, '@'))
+				{
+					*pc = '\"';
+					pszFunc = pc;
+				}
+			}
+			// pszFunc = L@HOFGLFDL@LdrLoadDll@
+			else if (pc = strchr(pszFunc, '@'))
+			{
+				// pc = @HOFGLFDL@LdrLoadDll@
+				if (pc = strchr(pc + 1, '@'))
+				{
+					// pc = @LdrLoadDll@
+					*pc = '\"';
+					pszFunc = pc;
+
+					if (pc = strchr(pc + 1, '@'))
+					{
+						// pc = @
+						*pc = '\"', * ++pc = 0;
+					}
+				}
+			}
+			break;
+		}
+	}
+
+	int len = sprintf_s(buf, pszFunc - buf, "%x%c%hs%c", (ULONG)u, 0, pszFunc, 0);
+
+	if (0 >= len)
+	{
+		return 0;
+	}
+
+	buf += len, n++;
+	goto __1;
+}
+
+PSTR ProcessMAP(PCWSTR pszMap, PIMAGE_NT_HEADERS pinth, RO** ppr, ULONG* pn, ULONG* prva, ULONG* psize)
+{
+	PBYTE pb;
+	ULONG cb;
+
+	if (0 <= ReadFromFile(pszMap, &pb, &cb, 0, 1))
+	{
+		pb[cb] = 0;
+		ULONG n;
+		if (PSTR psz = ProcessMAP2((PSTR)pb, pinth, prva, psize, &n))
+		{
+			if (n && 8 * n <= (cb - RtlPointerToOffset(pb, psz)))
+			{
+				RO* pr = (RO*)psz;
+				*ppr = pr, *pn = n;
+				PSTR pc = (PSTR)pb;
+				do
+				{
+					ULONG u = strtoul(pc, &pc, 16);
+					if (*pc)
+					{
+						break;
+					}
+					pr->rva = u;
+					pr++->ofs = RtlPointerToOffset(pb, ++pc);
+					pc += strlen(pc) + 1;
+				} while (--n);
+
+				if (!n)
+				{
+					return (PSTR)pb;
+				}
+			}
+		}
+		delete[] pb;
+	}
+
+	return 0;
+}
+
+ULONG GetNameFromMap(ULONG rva, RO* pr, ULONG b, ULONG* d)
+{
+	ULONG a = 0, o;
+
+	do
+	{
+		ULONG r = pr[o = (a + b) >> 1].rva;
+		if (rva == r)
+		{
+			*d = 0;
+			return pr[o].ofs;
+		}
+		rva < r ? b = o : a = o + 1;
+	} while (a < b);
+
+	*d = rva - pr[a - 1].rva;
+	return pr[a - 1].ofs;
+}
+
+#endif // _X86_
+
 NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULONG_PTR pvShellEnd)
 {
 	ULONG s;
@@ -672,20 +942,47 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 		return STATUS_INTERNAL_ERROR;
 	}
 
-	if (pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_BASERELOC, &s))
+	if ((pv = RtlImageDirectoryEntryToData(hmod, TRUE, IMAGE_DIRECTORY_ENTRY_BASERELOC, &s)) && s)
 	{
 		pvShellEnd -= (ULONG_PTR)hmod;
 
 #ifdef _X86_
-		BOOL bFirst = TRUE;
-		PVOID pvTarget = 0;
+
+		//while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
+		RO* pr = 0;
+		ULONG n = 0, rvaU = 0, sizeU = 0, minRVA = 0, maxRVA = 0;
+
+		struct AF {
+			PSTR buf;
+
+			AF(PSTR buf) : buf(buf) {
+			}
+
+			~AF()
+			{
+				if (buf) delete[] buf;
+			}
+		} af(ProcessMAP(pszMap, RtlImageNtHeader(hmod), &pr, &n, &rvaU, &sizeU));
+
+		if (af.buf)
+		{
+			qsort(pr, n, sizeof(RO), (int(__cdecl* )(const void*, const void*))RO::compare);
+
+			minRVA = pr->rva, maxRVA = pr[n - 1].rva;
+		}
+
 #endif // _X86_
 
 		do
 		{
+			if (s < sizeof(IMAGE_BASE_RELOCATION))
+			{
+				return STATUS_INVALID_IMAGE_FORMAT;
+			}
+
 			ULONG SizeOfBlock = pibr->SizeOfBlock;
 
-			if (SizeOfBlock < sizeof(IMAGE_BASE_RELOCATION))
+			if (SizeOfBlock < sizeof(IMAGE_BASE_RELOCATION) || s < SizeOfBlock)
 			{
 				return STATUS_INVALID_IMAGE_FORMAT;
 			}
@@ -728,29 +1025,61 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 						if (IMAGE_REL_BASED_HIGHLOW == pu->type)
 						{
 							ULONG Target = *pru - (ULONG)hmod;
-							DbgPrint("!! Exist Relocs: %08x -> %08x\r\n", rva, Target);
 
-							// while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
+							if (Target - rvaU < sizeU || Target == pvShellEnd)
+							{
+								// target in .text$mn$cpp$u - ok
+								continue;
+							}
+
+							if (af.buf)
+							{
+								ULONG d1, d2;
+								PCSTR name1 = af.buf + GetNameFromMap(rva, pr, n, &d1);
+								PCSTR name2 = af.buf + GetNameFromMap(Target, pr, n, &d2);
+
+								if (d2) _UNLIKELY
+								{
+									if (d1) 
+									{
+										DbgPrint("!! Relocs: %08x ( %hs+%u ) -> %08x ( %hs+%u )\r\n",
+											rva, name1, d1, Target, name2, d2);
+									}
+									else _UNLIKELY
+									{
+										DbgPrint("!! Relocs: %08x ( %hs ) -> %08x ( %hs+%u )\r\n",
+											rva, name1, Target, name2, d2);
+									}
+								}
+								else 
+								{
+									if (d1) 
+									{
+										if (strcmp(name2, "?__Address@@YIPAXPBX@Z")) _LIKELY
+										{
+											DbgPrint("!! Relocs: %08x ( %hs+%u ) -> %08x ( %hs )\r\n",
+												rva, name1, d1, Target, name2);
+										}
+									}
+									else _UNLIKELY
+									{
+										DbgPrint("!! Relocs: %08x ( %hs ) -> %08x ( %hs )\r\n",
+											rva, name1, Target, name2);
+									}
+								}
+							}
+							else
+							{
+								DbgPrint("!! Relocs: %08x -> %08x\r\n", rva, Target);
+							}
+
 							if (pvShellEnd < Target)
 							{
-								DbgPrint("reloc to %08x beyond shell end (%08x)\r\n", Target, pvShellEnd);
+								DbgPrint("reloc to %08x beyond shell end ( %08x )\r\n", Target, pvShellEnd);
 								return STATUS_ILLEGAL_DLL_RELOCATION;
 							}
 
-							if (bFirst)
-							{
-								bFirst = FALSE;
-								if (Target + 8 != rva)
-								{
-									DbgPrint("_Target(%p) + 8 != rva(%x)\r\n", Target, rva);
-									return STATUS_ILLEGAL_DLL_RELOCATION;
-								}
-
-								pvTarget = RtlOffsetToPointer(hmod, Target);
-
-								DbgPrint("__Address: %p\r\n", pvTarget);
-							}
-							else
+							if (!af.buf)
 							{
 								CHAR msg[0x80];
 								ULONG cch = _countof(msg);
@@ -758,43 +1087,21 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 								{
 									DbgPrint("\t%hs\r\n", msg);
 								}
-#if 0
-								// mov ecx,offset x
-								if (0xb9 != prb[-1])
-								{
-									return STATUS_ILLEGAL_DLL_RELOCATION;
-								}
-								++pru;
-
-								// call __Address;
-								if (0xe8 != *prb++)
-								{
-									return STATUS_ILLEGAL_DLL_RELOCATION;
-								}
-
-								ULONG ofs = *pru++;
-
-								DbgPrint("call %p (%p + %08x)\r\n", prb + ofs, prb, ofs);
-
-								if (prb + ofs != pvTarget)
-								{
-									return STATUS_ILLEGAL_DLL_RELOCATION;
-								}
-#endif // 0
 							}
-							}
-						else
+						}
+						else // if (IMAGE_REL_BASED_HIGHLOW == pu->type)
 #endif // _X86_
 						{
 							DbgPrint("######## !! Exist Relocs (%x:%08x) !! ########\r\n", pu->type, rva);
 							return STATUS_ILLEGAL_DLL_RELOCATION;
 						}
-						}
-					}
-				} while (pu++, --SizeOfBlock);
+					} // if (VirtualAddress + pu->ofs < pvShellEnd)
+				} // if (pu->type)
 
-			} while (s);
-		}
+			} while (pu++, --SizeOfBlock);
+
+		} while (s);
+	}
 
 	DbgPrint("!! NO IMPORT, NO RELOCS. OK !!\r\n");
 
