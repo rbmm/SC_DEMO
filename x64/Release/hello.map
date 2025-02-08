@@ -1,6 +1,6 @@
  hello
 
- Timestamp is 67a76350 (Sat Feb  8 15:59:44 2025)
+ Timestamp is 67a772ec (Sat Feb  8 17:06:20 2025)
 
  Preferred load address is 0000000140000000
 
@@ -12,7 +12,7 @@
  0001:00001000 00000210H .text$mn$cpp$u          CODE
  0001:00001210 00000000H .text$mn$cpp$v          CODE
  0001:00001210 00000008H .text$nm                CODE
- 0001:00001218 00000186H .text$zz                CODE
+ 0001:00001218 0000017bH .text$zz                CODE
  0002:00000000 00000000H .idata$5                DATA
  0002:00000000 000000bcH .rdata                  DATA
  0002:000000bc 0000006cH .rdata$zzzdbg           DATA

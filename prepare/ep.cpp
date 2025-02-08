@@ -491,6 +491,12 @@ NTSTATUS CreateExeSC(PCWSTR pwzFileName, PVOID Base, ULONG cb, PVOID ImageBase)
 		pe->ish.PointerToRawData = sizeof(PE);
 		pe->ish.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
 
+		if ('?' == *pwzFileName)
+		{
+			++pwzFileName;
+			pe->ish.Characteristics |= IMAGE_SCN_MEM_WRITE;
+		}
+
 		memcpy(pe->text, Base, cb);
 
 		NTSTATUS status = SaveToFile(pwzFileName, pe, sizeof(PE) + cb);
@@ -507,6 +513,16 @@ NTSTATUS CreateExeSC(PCWSTR pwzFileName, PVOID Base, ULONG cb, PVOID ImageBase)
 
 NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 {
+	if (IsDebuggerPresent())
+	{
+		if (wcschr(GetCommandLineW(), '?'))
+		{
+			VirtualProtect(Base, cb, PAGE_EXECUTE_READWRITE, &cb);
+		}
+
+		return 0;
+	}
+
 	DbgPrint("PrepareSC(%p, %x, <%ws>)\r\n", Base, cb, GetCommandLineW());
 
 	//*map*obj*imp*[bin]*[?password?asm][*exe]

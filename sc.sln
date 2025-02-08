@@ -9,13 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prepare", "prepare\prepare.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello", "hello\hello.vcxproj", "{633C619A-510E-E3D4-D208-18F6763417D4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "template", "template\template.vcxproj", "{9C754736-B96C-46C0-DEA5-BFFBEE10B974}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewScProj", "NewScProj\NewScProj.vcxproj", "{68C81E6E-EA30-65AF-2725-CF136FD0975C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LIB", "LIB", "{A9103F0B-DF36-4416-9673-20B97ABBBD3C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tool", "Tool", "{7909A239-777A-43FD-80D6-6ADAADEF4BF4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "template", "template\template.vcxproj", "{0AFD4281-EEBF-6585-5172-0C928D24629B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,13 +35,13 @@ Global
 		{633C619A-510E-E3D4-D208-18F6763417D4}.Release|x64.Build.0 = Release|x64
 		{633C619A-510E-E3D4-D208-18F6763417D4}.Release|x86.ActiveCfg = Release|Win32
 		{633C619A-510E-E3D4-D208-18F6763417D4}.Release|x86.Build.0 = Release|Win32
-		{9C754736-B96C-46C0-DEA5-BFFBEE10B974}.Release|x64.ActiveCfg = Release|x64
-		{9C754736-B96C-46C0-DEA5-BFFBEE10B974}.Release|x64.Build.0 = Release|x64
-		{9C754736-B96C-46C0-DEA5-BFFBEE10B974}.Release|x86.ActiveCfg = Release|Win32
-		{9C754736-B96C-46C0-DEA5-BFFBEE10B974}.Release|x86.Build.0 = Release|Win32
 		{68C81E6E-EA30-65AF-2725-CF136FD0975C}.Release|x64.ActiveCfg = Release|Win32
 		{68C81E6E-EA30-65AF-2725-CF136FD0975C}.Release|x86.ActiveCfg = Release|Win32
 		{68C81E6E-EA30-65AF-2725-CF136FD0975C}.Release|x86.Build.0 = Release|Win32
+		{0AFD4281-EEBF-6585-5172-0C928D24629B}.Release|x64.ActiveCfg = Release|x64
+		{0AFD4281-EEBF-6585-5172-0C928D24629B}.Release|x64.Build.0 = Release|x64
+		{0AFD4281-EEBF-6585-5172-0C928D24629B}.Release|x86.ActiveCfg = Release|Win32
+		{0AFD4281-EEBF-6585-5172-0C928D24629B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,7 +52,7 @@ Global
 		{68C81E6E-EA30-65AF-2725-CF136FD0975C} = {7909A239-777A-43FD-80D6-6ADAADEF4BF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		    SolutionGuid = {80B18789-2ECF-47FE-A35C-FBA2F85928EA}
 		SolutionGuid = {5C43FF36-EEA7-4C75-B922-01379AADF7D7}
+		    SolutionGuid = {80B18789-2ECF-47FE-A35C-FBA2F85928EA}
 	EndGlobalSection
 EndGlobal

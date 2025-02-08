@@ -64,26 +64,24 @@ void WINAPI ScEntry(PEB* peb)
 
 	NTSTATUS status = 0;
 
+	UNICODE_STRING DllName;
+	RAC(RtlInitUnicodeString, &DllName, L"prepare.dll");
+
+	PVOID hmod;
+
+	if (0 <= (status = RAC(LdrLoadDll, 0, 0, &DllName, &hmod)))
+	{
+		if (0 <= (status = RAC(LdrGetProcedureAddress, hmod, 0, 1, &pv)))
+		{
+			status = PrepareSC(epASM, RtlPointerToOffset(epASM, sc_end()), &__ImageBase);
+		}
+
+		RAC(LdrUnloadDll, hmod);
+	}
+
 	if (peb->BeingDebugged)
 	{
 		epASM();
-	}
-	else
-	{
-		UNICODE_STRING DllName;
-		RAC(RtlInitUnicodeString, &DllName, L"prepare.dll");
-
-		PVOID hmod;
-		
-		if (0 <= (status = RAC(LdrLoadDll, 0, 0, &DllName, &hmod)))
-		{
-			if (0 <= (status = RAC(LdrGetProcedureAddress, hmod, 0, 1, &pv)))
-			{
-				status = PrepareSC(epASM, RtlPointerToOffset(epASM, sc_end()), &__ImageBase);
-			}
-
-			RAC(LdrUnloadDll, hmod);
-		}
 	}
 
 	RAC(RtlExitUserProcess, status);

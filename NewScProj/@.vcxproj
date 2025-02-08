@@ -134,17 +134,24 @@
 
 void WINAPI ep()
 {
-	CPP_FUNCTION;
-	ExitProcess(0);
+CPP_FUNCTION;
+ExitProcess(0);
 }^.code
+
+; _ERW_ = 1
 
 ; void ep()
 extern ?ep@@YAXXZ : PROC
 
 ; void epASM()
 ?epASM@@YAXXZ proc
-  call protect
-  jmp ?ep@@YAXXZ
+
+IFNDEF _ERW_
+    call protect
+ENDIF
+
+    jmp ?ep@@YAXXZ
+
 ?epASM@@YAXXZ endp
 
 include <..\scentry\nobase.x64.inc>
@@ -157,14 +164,21 @@ end^.686
 
 .code
 
+; _ERW_ = 1
+
 ; void __stdcall ep()
 extern ?ep@@YGXXZ : PROC
 
 ; void __stdcall epASM()
 ?epASM@@YGXXZ proc
-  call protect
-  jmp ?ep@@YGXXZ
+
+IFNDEF _ERW_
+    call protect
+ENDIF
+
+    jmp ?ep@@YGXXZ
 ?epASM@@YGXXZ endp
+
 
 include <../scentry/nobase.x86.inc>
 
