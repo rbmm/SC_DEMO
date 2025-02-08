@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _X86_
+
 #ifndef UNDNAME_COMPLETE
 #define UNDNAME_COMPLETE                 0x0000  // Enable full undecoration
 #define UNDNAME_NO_LEADING_UNDERSCORES   0x0001  // Remove leading underscores from MS extended keywords
@@ -25,4 +27,12 @@
 
 #define UNDNAME_DEFAULT (UNDNAME_NO_MS_KEYWORDS|UNDNAME_NO_ACCESS_SPECIFIERS|UNDNAME_NO_THROW_SIGNATURES|UNDNAME_NO_ECSU|UNDNAME_NO_ALLOCATION_MODEL|UNDNAME_NO_THISTYPE|UNDNAME_NO_RETURN_UDT_MODEL)
 
-PCSTR unDNameEx(PCSTR mangled, PSTR buffer, DWORD cb, DWORD flags = UNDNAME_DEFAULT);
+PCSTR unDNameEx(
+	_In_ PCSTR DecoratedName, 
+	_Out_ PSTR outputString,
+	_In_ DWORD maxStringLength,
+	_In_ DWORD flags = UNDNAME_DEFAULT);
+
+PSTR UndecorateString(_In_ PSTR pszSym, _Out_opt_ PCSTR* ppszSection = 0);
+
+#endif

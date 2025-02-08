@@ -4,6 +4,7 @@
 
 #include "map2.h"
 #include "file.h"
+#include "undname.h"
 
 struct MAP::RO
 {
@@ -139,64 +140,13 @@ __0:
 
 	if (!memcmp("??_C@_", pszFunc, 6))
 	{
-		pszFunc += 6;
-		PSTR pa, pc;
-		switch (*pszFunc++)
+		if (PSTR name = UndecorateString(pszFunc + 6))
 		{
-		case '1':
-			if (pc = strchr(pszFunc, '?'))
-			{
-				pszFunc = pc - 2;
-				*pszFunc = 'L';
-				pszFunc[1] = '\"';
-				if (pa = strrchr(pc, '@'))
-				{
-					*pa = 0;
-					pa = pc;
-					// ?$AA
-					while (pc && '?' == *pc++ && '$' == *pc++ && 'A' == *pc++ && 'A' == *pc++)
-					{
-						char c = *pc++;
-						if ('?' == c)
-						{
-							pc = strchr(pc, '?');
-							c = '.';
-						}
-						*pa++ = c;
-					}
-					*pa++ = '\"', *pa = 0;
-				}
-			}
-			break;
-		case '0':
-			if (pc = strchr(pszFunc, '?'))
-			{
-				// O@HELLMLPH@ApcTest?
-				*pc = '\"', * ++pc = 0;
-				if (pc = strrchr(pszFunc, '@'))
-				{
-					*pc = '\"';
-					pszFunc = pc;
-				}
-			}
-			// pszFunc = L@HOFGLFDL@LdrLoadDll@
-			else if (pc = strchr(pszFunc, '@'))
-			{
-				// pc = @HOFGLFDL@LdrLoadDll@
-				if (pc = strchr(pc + 1, '@'))
-				{
-					// pc = @LdrLoadDll@
-					*pc = '\"';
-					pszFunc = pc;
-
-					if (pc = strchr(pc + 1, '@'))
-					{
-						// pc = @
-						*pc = '\"', * ++pc = 0;
-					}
-				}
-			}
-			break;
+			pszFunc = name;
+		}
+		else
+		{
+			strcpy(pszFunc, "`string");
 		}
 	}
 
