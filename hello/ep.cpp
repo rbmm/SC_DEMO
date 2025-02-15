@@ -111,6 +111,8 @@ void ComTest()
 void WINAPI ep()
 {
 	CPP_FUNCTION;
+
+	printf(_YA("t = %u\r\n"), GetTickCount());
 	
 	BOOL Critical;
 	IsProcessCritical(NtCurrentProcess(), &Critical);
