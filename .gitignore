@@ -2,6 +2,5 @@
 *.pdb
 tmp
 *.obj
-*.lib
 *.exp
 *.aps
