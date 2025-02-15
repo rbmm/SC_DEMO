@@ -4,3 +4,6 @@ tmp
 *.obj
 *.exp
 *.aps
+*.exe
+*.dll
+*.map
