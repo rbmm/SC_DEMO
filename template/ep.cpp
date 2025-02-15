@@ -5,6 +5,6 @@
 
 void WINAPI ep()
 {
-	CPP_FUNCTION;
-	ExitProcess(0);
+CPP_FUNCTION;
+ExitProcess(0);
 }

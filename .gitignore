@@ -5,3 +5,13 @@ tmp
 *.lib
 *.exp
 *.aps
+*.exe
+*.dll
+*.map
+*.asm
+*.bin
+!msvcrt.lib
+!imp.x64.asm
+!imp.x86.asm
+!x64.asm
+!x86.asm

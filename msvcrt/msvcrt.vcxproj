@@ -13,55 +13,45 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0AFD4281-eebf-6585-5172-0C928D24629B}</ProjectGuid>
-    <RootNamespace>template</RootNamespace>
+    <ProjectGuid>{62B7751F-6666-A8B8-4647-CA492CC2A246}</ProjectGuid>
+    <RootNamespace>msvcrt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <UserRootDir>$(SolutionDir)MSBuild\v4.0</UserRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Label="LocalAppDataPlatform" />
-  </ImportGroup>
+  <PropertyGroup>
+    <OutDir Condition="'$(PlatformTarget)'=='x86'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(PlatformTarget)'!='x86'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <EmbedManifest>false</EmbedManifest>
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)pnth</AdditionalIncludeDirectories>
-      <AdditionalOptions>/cbstring %(AdditionalOptions)</AdditionalOptions>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-    </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <EntryPointSymbol Condition="'$(PlatformTarget)'=='x86'">?ScEntry@@YGXPAU_PEB@@@Z</EntryPointSymbol>
-      <EntryPointSymbol Condition="'$(PlatformTarget)'=='x64'">?ScEntry@@YAXPEAU_PEB@@@Z</EntryPointSymbol>
-      <AdditionalOptions>/EMITPOGOPHASEINFO /EMITVOLATILEMETADATA:NO %(AdditionalOptions)</AdditionalOptions>
-      <GenerateMapFile>true</GenerateMapFile>
-      <AdditionalDependencies>ntdllp.lib;ScEntry.lib;kernel32.lib;user32.lib</AdditionalDependencies>
+      <ModuleDefinitionFile Condition="'$(PlatformTarget)'=='x64'">x64.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile Condition="'$(PlatformTarget)'=='x86'">x86.def</ModuleDefinitionFile>
+      <IncrementalLinkDatabaseFile />
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <NoEntryPoint>true</NoEntryPoint>
+      <ProgramDatabaseFile />
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
-    <PostBuildEvent>
-      <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*$(PlatformTarget).obj*imp.$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).bin*$(ProjectName).$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).exe</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h" />
-    <ClCompile Include="ep.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
-    </ClCompile>
-    <None Include="imp.x86.asm" />
-    <None Include="imp.x64.asm" />
     <CustomBuild Include="x64.asm">
       <FileType>Document</FileType>
       <Command>ml64 /c /Cp %(Identity)</Command>
@@ -74,6 +64,8 @@
       <Outputs>%(Filename).obj</Outputs>
       <ExcludedFromBuild Condition="'$(PlatformTarget)'!='x86'">true</ExcludedFromBuild>
     </CustomBuild>
+    <None Include="x64.def" />
+    <None Include="x86.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
