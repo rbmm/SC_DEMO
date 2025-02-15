@@ -49,7 +49,6 @@
       <AdditionalOptions>/EMITPOGOPHASEINFO /EMITVOLATILEMETADATA:NO %(AdditionalOptions)</AdditionalOptions>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>msvcrt.lib;ntdllp.lib;ScEntry.lib;kernel32.lib;user32.lib;dnsapi.lib;ntmarta.lib;ole32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(PlatformShortName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>"$(TargetPath)" *$(OutDir)$(ProjectName).map*$(PlatformTarget).obj*imp.$(PlatformTarget).asm*$(ProjectName).$(PlatformTarget).bin*?$(ProjectName).$(PlatformTarget).asm*?$(ProjectName).$(PlatformTarget).exe</Command>
