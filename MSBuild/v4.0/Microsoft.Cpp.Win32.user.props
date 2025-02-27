@@ -14,7 +14,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-		<AdditionalDependencies>BufferOverflow.lib;ntdllp.lib;kernel32.lib;user32.lib;advapi32.lib</AdditionalDependencies>
+		<AdditionalDependencies>BufferOverflow.lib;ntdllp.lib;kernel32.lib;advapi32.lib;user32.lib</AdditionalDependencies>
 		<IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
 		<ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
 		<AdditionalLibraryDirectories>"$(OutDir)"</AdditionalLibraryDirectories>
