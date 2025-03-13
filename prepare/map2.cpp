@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#ifdef _X86_
-
 #include "map2.h"
 #include "file.h"
 #include "undname.h"
@@ -210,14 +208,14 @@ BOOL MAP::Init(PCWSTR pszMap, PIMAGE_NT_HEADERS pinth)
 	return FALSE;
 }
 
-PCSTR MAP::GetName(_In_ ULONG rva, _Out_ ULONG* d)
+PCSTR MAP::GetName(_In_ ULONG_PTR rva, _Out_ ULONG* d)
 {
 	ULONG a = 0, o, b = _M_n;
 	RO* pr = _M_pr;
 
 	if (rva < _M_minRVA || _M_maxRVA <= rva)
 	{
-		*d = rva;
+		*d = (ULONG)rva;
 		return "";
 	}
 
@@ -232,9 +230,7 @@ PCSTR MAP::GetName(_In_ ULONG rva, _Out_ ULONG* d)
 		rva < r ? b = o : a = o + 1;
 	} while (a < b);
 
-	*d = rva - pr[--a].rva;
+	*d = (ULONG)rva - pr[--a].rva;
 
 	return _M_buf + pr[a].ofs;
 }
-
-#endif // _X86_

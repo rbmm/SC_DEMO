@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef _X86_
-
 struct MAP
 {
 	struct RO;
@@ -15,7 +13,7 @@ struct MAP
 		if (_M_buf) delete [] _M_buf;
 	}
 
-	PCSTR GetName(_In_ ULONG rva, _Out_ ULONG* d);
+	PCSTR GetName(_In_ ULONG_PTR rva, _Out_ ULONG* d);
 
 	RO* Parse(PSTR pcsz, PIMAGE_NT_HEADERS pinth);
 
@@ -31,5 +29,3 @@ struct MAP
 		return _M_buf;
 	}
 };
-
-#endif // _X86_

@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef _X86_
-
 #ifndef UNDNAME_COMPLETE
 #define UNDNAME_COMPLETE                 0x0000  // Enable full undecoration
 #define UNDNAME_NO_LEADING_UNDERSCORES   0x0001  // Remove leading underscores from MS extended keywords
@@ -35,4 +33,3 @@ PCSTR unDNameEx(
 
 PSTR UndecorateString(_In_ PSTR pszSym, _Out_opt_ PCSTR* ppszSection = 0);
 
-#endif

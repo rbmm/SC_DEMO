@@ -65,13 +65,9 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 	{
 		pvShellEnd -= (ULONG_PTR)hmod;
 
-#ifdef _X86_
-
 		//while (!IsDebuggerPresent()) Sleep(1000); __debugbreak();
 		MAP map;
 		map.Init(pszMap, RtlImageNtHeader(hmod));
-
-#endif // _X86_
 
 		do
 		{
@@ -116,22 +112,27 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 						union {
 							PVOID prv;
 							PBYTE prb;
-							PULONG pru;
+							PULONG_PTR pru;
 						};
 						prv = RtlOffsetToPointer(hmod, rva);
 
 #ifdef _X86_
+#define IMAGE_REL_BASED IMAGE_REL_BASED_HIGHLOW
+#else
+#define IMAGE_REL_BASED IMAGE_REL_BASED_DIR64
+#endif // _X86_
 
-						if (IMAGE_REL_BASED_HIGHLOW == pu->type)
+						if (IMAGE_REL_BASED == pu->type)
 						{
-							ULONG Target = *pru - (ULONG)hmod;
+							ULONG_PTR Target = *pru - (ULONG_PTR)hmod;
 
+#ifdef _X86_
 							if (map.InUSection(Target) || Target == pvShellEnd)
 							{
 								// target in .text$mn$cpp$u - ok
 								continue;
 							}
-
+#endif // _X86_
 							char buf1[0x100], buf2[0x100];
 
 							if (map.IsInit())
@@ -158,7 +159,9 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 								{
 									if (d1) 
 									{
+#ifdef _X86_
 										if (strcmp(pcszTarget, "?__Address@@YIPAXPBX@Z")) _LIKELY
+#endif // _X86_										
 										{
 											DbgPrint("!! Relocs: %08x ( %hs+%u ) -> %08x ( %hs )\r\n",
 												rva, name1, d1, Target, name2);
@@ -191,6 +194,7 @@ NTSTATUS ProcessIAT(PVOID hmod, PWSTR pczObj, PCWSTR pszImp, PCWSTR pszMap, ULON
 								}
 							}
 						}
+#ifdef _X86_						
 						else // if (IMAGE_REL_BASED_HIGHLOW == pu->type)
 #endif // _X86_
 						{
@@ -525,7 +529,7 @@ NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 
 	DbgPrint("PrepareSC(%p, %x, <%ws>)\r\n", Base, cb, GetCommandLineW());
 
-	//*map*obj*imp*[bin]*[?password?asm][*exe]
+	//*map*obj*imp*[bin]*[?password?asm][*?exe]
 
 	if (PWSTR psz = wcschr(GetCommandLineW(), '*'))
 	{

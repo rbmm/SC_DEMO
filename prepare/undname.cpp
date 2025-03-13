@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "undname.h"
 
-#ifdef _X86_
-
 #include "rtlframe.h"
 
 typedef RTL_FRAME<DATA_BLOB> AFRAME;
@@ -41,7 +39,12 @@ PSTR __cdecl __unDNameEx
 	DWORD flags
 );
 
-EXTERN_C PVOID _imp____unDNameEx = 0;
+#ifdef _X86_
+#define __imp___unDNameEx _imp____unDNameEx
+#endif // _X86_
+
+
+EXTERN_C PVOID __imp___unDNameEx = 0;
 
 PSTR __cdecl GetParameter(long /*i*/)
 {
@@ -50,7 +53,7 @@ PSTR __cdecl GetParameter(long /*i*/)
 
 static PSTR _unDName(PCSTR mangled, PSTR buffer, DWORD cb, DWORD flags)
 {
-	if (_imp____unDNameEx)
+	if (__imp___unDNameEx)
 	{
 	__ok:
 		AFRAME af;
@@ -62,7 +65,7 @@ static PSTR _unDName(PCSTR mangled, PSTR buffer, DWORD cb, DWORD flags)
 
 	if (HMODULE hmod = LoadLibraryW(L"msvcrt.dll"))
 	{
-		if (_imp____unDNameEx = GetProcAddress(hmod, "__unDNameEx"))
+		if (__imp___unDNameEx = GetProcAddress(hmod, "__unDNameEx"))
 		{
 			goto __ok;
 		}
@@ -242,5 +245,3 @@ PSTR UndecorateString(_In_ PSTR pszSym, _Out_opt_ PCSTR* ppszSection /*= 0*/)
 
 	return name;
 }
-
-#endif
