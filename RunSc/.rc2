@@ -1,0 +1,7 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID  RT_MANIFEST ".manifest"

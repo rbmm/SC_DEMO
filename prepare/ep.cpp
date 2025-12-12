@@ -281,7 +281,7 @@ NTSTATUS I_CreateAsmSC(PCWSTR pwzFileName, const void* pcv, SIZE_T cb)
 __exit:
 		delete[] buf;
 
-		DbgPrint("CreateAsmSC(%ws)=%x\r\n", pwzFileName, status);
+		DbgPrint("CreateAsmSC(\"%ws\")=%x\r\n", pwzFileName, status);
 
 		return status;
 	}
@@ -355,14 +355,20 @@ NTSTATUS CreateAsmSC(PCWSTR to, PVOID pv, ULONG cb)
 		}
 		DbgPrint("password: \"%ws\"\r\n", to);
 
+		ULONG len = RtlPointerToOffset(to, psz);
+		NTSTATUS status = RtlUnicodeToUTF8N((char*)to, len, &len, to, len);
+
+		if (0 > status)
+		{
+			return status;
+		}
+
 		BCRYPT_KEY_HANDLE hKey;
 		UCHAR secret[32];
 		ULONG s = sizeof(secret);
-		if (CryptHashCertificate2(BCRYPT_SHA256_ALGORITHM, 0, 0, (PBYTE)to, RtlPointerToOffset(to, psz), secret, &s))
+		if (CryptHashCertificate2(BCRYPT_SHA256_ALGORITHM, 0, 0, (PBYTE)to, len, secret, &s))
 		{
-			NTSTATUS status = CreateAesKey(&hKey, secret, s);
-
-			if (0 <= status)
+			if (0 <= (status = CreateAesKey(&hKey, secret, s)))
 			{
 				PBYTE pb = 0;
 				s = 0;
@@ -507,7 +513,7 @@ NTSTATUS CreateExeSC(PCWSTR pwzFileName, PVOID Base, ULONG cb, PVOID ImageBase)
 
 		delete pe;
 
-		DbgPrint("CreateExeSC(%ws)=%x\r\n", pwzFileName, status);
+		DbgPrint("CreateExeSC(\"%ws\")=%x\r\n", pwzFileName, status);
 
 		return status;
 	}
@@ -575,6 +581,7 @@ NTSTATUS NTAPI PrepareSC(PVOID Base, ULONG cb, PVOID ImageBase)
 					if (pczBin && *pczBin)
 					{
 						status = SaveToFile(pczBin, Base, cb);
+						DbgPrint("CreateBin(\"%ws\" [%x])=%x\r\n", pczBin, cb, status);
 					}
 
 					if (0 <= status)

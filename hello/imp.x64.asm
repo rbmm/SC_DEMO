@@ -4,6 +4,7 @@ createFunc dnsapi, DnsStatusString, 0bfe22618h
 HMOD dnsapi, <DNSAPI.dll>
 
 createFunc kernel32, IsProcessCritical, 039cba57ah
+createFunc kernel32, ExitProcess, 054dfc7ebh
 createFunc kernel32, FormatMessageW, 0b8c2559fh
 createFunc kernel32, GetTickCount, 0bb509c20h
 

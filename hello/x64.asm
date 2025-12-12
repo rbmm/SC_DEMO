@@ -1,7 +1,7 @@
 .code
 
-;
-_ERW_ = 1
+;_ERW_ = 1
+
 
 ; void ep()
 extern ?ep@@YAXXZ : PROC
