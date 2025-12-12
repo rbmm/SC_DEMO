@@ -4,4 +4,10 @@
     <LocalDebuggerCommandArguments>?</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArgumentsHistory>?|</LocalDebuggerCommandArgumentsHistory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArgumentsHistory>?|</LocalDebuggerCommandArgumentsHistory>
+  </PropertyGroup>
 </Project>

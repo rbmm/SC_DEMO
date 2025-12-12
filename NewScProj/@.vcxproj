@@ -22,7 +22,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -134,8 +134,8 @@
 
 void WINAPI ep()
 {
-CPP_FUNCTION;
-ExitProcess(0);
+    CPP_FUNCTION;
+    ExitProcess(0);
 }^.code
 
 ; _ERW_ = 1

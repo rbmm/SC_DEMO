@@ -704,6 +704,72 @@ NTSTATUS ToZipAsm(PCWSTR from, PCWSTR to, bool _text, bool bZip)
 	return status;
 }
 
+NTSTATUS SetPETime(PCWSTR lpFileName, PCWSTR time)
+{
+	printf(L"SetPETime(%ws, %ws)\r\n", lpFileName, time);
+	ULONG TimeDateStamp = wcstoul(time, const_cast<WCHAR**>(&time), 16);
+	if (!TimeDateStamp || *time)
+	{
+		return STATUS_INVALID_PARAMETER_2;
+	}
+	NtNameFromWin32 ObjectName;
+	OBJECT_ATTRIBUTES oa = { sizeof(oa), 0, &ObjectName, OBJ_CASE_INSENSITIVE };
+
+	NTSTATUS status = ObjectName.Set(lpFileName);
+	HANDLE hFile = 0;
+	IO_STATUS_BLOCK iosb;
+
+	if (0 > status)
+	{
+		printf(L"convert <%s> = %x\r\n", lpFileName, status);
+	}
+	else
+	{
+		status = NtOpenFile(&hFile, FILE_GENERIC_READ | FILE_WRITE_DATA, &oa, &iosb,
+			FILE_SHARE_VALID_FLAGS, FILE_SYNCHRONOUS_IO_NONALERT);
+
+		printf(L"OpenFile(%wZ) = %x\r\n", static_cast<PCUNICODE_STRING>(&ObjectName), status);
+	}
+
+	if (0 <= status)
+	{
+		union {
+			IMAGE_DOS_HEADER idh;
+			IMAGE_NT_HEADERS inh;
+		};
+
+		if (0 <= (status = NtReadFile(hFile, 0, 0, 0, &iosb, &idh, sizeof(idh), 0, 0)))
+		{
+			if (IMAGE_DOS_SIGNATURE == idh.e_magic)
+			{
+				LARGE_INTEGER bo = { (ULONG)idh.e_lfanew };
+				if (0 <= (status = NtReadFile(hFile, 0, 0, 0, &iosb, &inh, sizeof(inh), &bo, 0)))
+				{
+					if (IMAGE_NT_SIGNATURE == inh.Signature)
+					{
+						ULONG t = inh.FileHeader.TimeDateStamp;
+						inh.FileHeader.TimeDateStamp = TimeDateStamp;
+						status = NtWriteFile(hFile, 0, 0, 0, &iosb, &inh, sizeof(inh), &bo, 0);
+						printf(L"TimeDateStamp: %08X <- %08X =[%x]\r\n", t, TimeDateStamp, status);
+					}
+					else
+					{
+						status = STATUS_INVALID_IMAGE_FORMAT;
+					}
+				}
+			}
+			else
+			{
+				status = STATUS_INVALID_IMAGE_NOT_MZ;
+			}
+		}
+
+		NtClose(hFile);
+	}
+
+	return status;
+}
+
 void WINAPI ep(void*)
 {
 	InitConsole();
@@ -769,6 +835,14 @@ void WINAPI ep(void*)
 			{
 				exitcode = HRESULT_FROM_NT(NewVcxProj(argv[0]));
 				argc--, argv++;
+			}
+		}
+		else if (!wcscmp(lpsz, L"ts"))
+		{
+			if (1 < argc)
+			{
+				exitcode = SetPETime(argv[0], argv[1]);
+				argc -= 2, argv += 2;
 			}
 		}
 

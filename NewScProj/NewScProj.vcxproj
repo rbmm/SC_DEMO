@@ -7,7 +7,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{68C81E6E-ea30-65AF-2725-CF136FD0975C}</ProjectGuid>
     <RootNamespace>NewScProj</RootNamespace>
@@ -18,7 +18,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -59,6 +59,7 @@
       <Command>ml /c /Cp %(Identity)</Command>
       <Outputs>%(Filename).obj</Outputs>
       <ExcludedFromBuild Condition="'$(PlatformTarget)'!='x86'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">vcx.asm</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Condition="exists('$(TargetPath)')" Include="@.vcxproj">
       <FileType>Document</FileType>

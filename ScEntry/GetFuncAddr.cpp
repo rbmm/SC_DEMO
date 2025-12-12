@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#pragma intrinsic(strcmp, strlen)
-
 //#define _PRINT_CPP_NAMES_
 #include "asmfunc.h"
 
